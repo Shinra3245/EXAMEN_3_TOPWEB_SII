@@ -42,3 +42,7 @@ jobs:
       - run: npm run check
       - run: npm run build:cloudflare
       - run: npm run deploy
+      - name: Verificar API publicada sin sesión real
+        env:
+          APP_BASE_URL: ${{ vars.CLOUDFLARE_WORKER_URL }}
+        run: test -n "$APP_BASE_URL" && npm run test:smoke

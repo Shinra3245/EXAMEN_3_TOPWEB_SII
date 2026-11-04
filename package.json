@@ -12,7 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "deploy": "wrangler deploy --autoconfig=false"
+    "deploy": "wrangler deploy --autoconfig=false",
+    "test:smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "next": "16.4.5",

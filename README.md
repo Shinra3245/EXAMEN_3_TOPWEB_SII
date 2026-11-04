@@ -2,6 +2,8 @@
 
 Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers mediante OpenNext 1.20.16. Toda comunicación con el SII, incluido el login, ocurre en el servidor. La página raíz es un marcador técnico; todavía no contiene la interfaz de la aplicación.
 
+Piloto técnico: https://examen3-sii.shinra3245.workers.dev
+
 ## Desarrollo
 
 Se requiere Node.js 24 (CI usa 24.16.0). Instalar el lockfile con `npm ci`. Copiar `.env.example` a `.env.local` y configurar una clave `SESSION_SECRET` aleatoria de 32 bytes (64 caracteres hexadecimales). No utilizar claves de ejemplo ni reutilizar claves entre entornos. Para la vista previa de Wrangler, proporcionar las mismas variables de desarrollo mediante `.dev.vars`, siempre fuera de Git.
@@ -18,6 +20,7 @@ No definir versiones `NEXT_PUBLIC_` de estas variables. Credenciales SII, tokens
 | Comando | Función |
 |---|---|
 | `npm run dev` | Desarrollo Next.js. |
+| `APP_BASE_URL=https://su-worker.workers.dev npm run test:smoke` | Pruebas HTTP sin credenciales ni sesión real; no acreditan consultas autenticadas. |
 | `npm run check` | ESLint, TypeScript y pruebas Vitest. |
 | `npm run build:cloudflare` | Build Next.js y adaptación a Workers. |
 | `npm run preview` | Runtime local de Workers; requiere build previo. |
@@ -56,4 +59,4 @@ Las pruebas automatizadas usan datos sintéticos y no acreditan el flujo autenti
 
 `wrangler.jsonc` declara únicamente Worker y assets estáticos; no solicita KV, R2, Durable Objects ni optimización de imágenes. La aplicación usa `nodejs_compat`. Las cuotas y el consumo real se deben revisar antes de considerar validado el uso en Free: [límites oficiales de Workers](https://developers.cloudflare.com/workers/platform/limits/).
 
-GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El despliegue automático está preparado pero deshabilitado hasta configurar `CLOUDFLARE_API_TOKEN` como secreto limitado a la cuenta/Worker y `CLOUDFLARE_ACCOUNT_ID` como variable, y habilitar `CLOUDFLARE_DEPLOY_ENABLED=true`. `SESSION_SECRET` se configura en el Worker y nunca se incorpora al bundle. Se puede seguir desplegando con la sesión local de Wrangler mientras se completa esa conexión: [configuración oficial de GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El despliegue automático está preparado pero deshabilitado hasta configurar `CLOUDFLARE_API_TOKEN` como secreto limitado a la cuenta/Worker y `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_WORKER_URL` como variables, y habilitar `CLOUDFLARE_DEPLOY_ENABLED=true`. `SESSION_SECRET` se configura en el Worker y nunca se incorpora al bundle. Se puede seguir desplegando con la sesión local de Wrangler mientras se completa esa conexión: [configuración oficial de GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
