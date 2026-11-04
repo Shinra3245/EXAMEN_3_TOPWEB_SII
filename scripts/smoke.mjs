@@ -14,6 +14,8 @@ const cases = [
   ["forged-proxy", "/api/auth/login", "POST", "{}", { Origin: "https://ataque.invalid", "X-Forwarded-Host": "ataque.invalid", "X-Forwarded-Proto": "https" }, 403],
   ["cross-logout", "/api/auth/logout", "POST", "{}", { Origin: "https://ataque.invalid" }, 403],
   ["logout", "/api/auth/logout", "POST", "{}", { Origin: origin }, 200],
+  ["unknown-api", "/api/desconocida", "GET", undefined, {}, 404],
+  ["method-not-allowed", "/api/health", "POST", "{}", {}, 405],
 ];
 for (const [name, path, method, body, headers, expected] of cases) {
   const response = await fetch(origin + path, {

@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-import { ApiErrorResponse } from "@/types/api";
 
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -61,9 +59,9 @@ export class UpstreamError extends AppError {
 export function toSafeErrorResponse(
   error: unknown,
   fallbackMessage = "Error interno del servidor"
-): NextResponse<ApiErrorResponse> {
+): Response {
   if (error instanceof AppError && error.isPublic) {
-    return NextResponse.json(
+    return Response.json(
       {
         success: false,
         error: {
@@ -81,7 +79,7 @@ export function toSafeErrorResponse(
   }
 
   // Errores no controlados: NO exponer stacktrace ni detalles internos
-  return NextResponse.json(
+  return Response.json(
     {
       success: false,
       error: {

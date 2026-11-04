@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
       "server-only": path.resolve(import.meta.dirname, "./tests/server-only.ts"),
+      "../.open-next/worker.js": path.resolve(import.meta.dirname, "./tests/open-next-worker.ts"),
     },
   },
 });

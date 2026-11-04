@@ -26,6 +26,10 @@ No definir versiones `NEXT_PUBLIC_` de estas variables. Credenciales SII, tokens
 | `npm run preview` | Runtime local de Workers; requiere build previo. |
 | `npm run deploy` | Publicación manual con Wrangler autenticado; requiere build previo y secretos configurados en el Worker. |
 
+## Ejecución de servidor
+
+Un único Worker publica frontend y backend. `src/worker.ts` enruta `/api/*` mediante handlers Web estándar compartidos en `src/server`; las rutas Next.js reexportan esos handlers para desarrollo local. Las demás rutas usan OpenNext. Los bindings se aíslan por petición con AsyncLocalStorage y solo en desarrollo Next se usa process.env como alternativa. El alias server-only de Wrangler se limita al bundle de servidor; Next conserva el centinela real contra importaciones cliente.
+
 ## API propia
 
 Las respuestas privadas incluyen `Cache-Control: no-store`. Los errores usan `{ success: false, error: { code, message } }`, sin mensajes institucionales crudos ni trazas. Las mutaciones de sesión requieren `Origin` exactamente igual a `APP_ORIGIN` (o al origen de la URL en desarrollo); se ignoran cabeceras forwarded para esta validación.

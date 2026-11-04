@@ -1,11 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "examen3-sii",
-  "main": ".open-next/worker.js",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-11-04",
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "alias": {
+    "server-only": "./src/server/worker-only-shim.ts"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

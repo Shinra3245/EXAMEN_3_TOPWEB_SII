@@ -1,5 +1,5 @@
 import "server-only";
-import { SESSION_COOKIE_NAME } from "@/config/env";
+import { SESSION_COOKIE_NAME, getEnvVar } from "@/config/env";
 import { ForbiddenError } from "./errors";
 
 /**
@@ -16,9 +16,11 @@ export function validateSameOrigin(req: Request): void {
     );
   }
 
-  const expectedOrigin = process.env.APP_ORIGIN
-    ? new URL(process.env.APP_ORIGIN).origin
-    : new URL(req.url).origin;
+  const reqOrigin = new URL(req.url).origin;
+  const configuredAppOrigin = getEnvVar("APP_ORIGIN");
+  const expectedOrigin = configuredAppOrigin
+    ? new URL(configuredAppOrigin).origin
+    : reqOrigin;
 
   // Host and X-Forwarded-* are request input, not a trusted origin allowlist.
   if (origin !== expectedOrigin) {
@@ -35,7 +37,7 @@ export function validateSameOrigin(req: Request): void {
 export function buildSessionCookieHeader(
   ciphertext: string,
   maxAgeSeconds: number,
-  isSecure = process.env.NODE_ENV === "production"
+  isSecure = getEnvVar("NODE_ENV") === "production"
 ): string {
   const parts = [
     `${SESSION_COOKIE_NAME}=${ciphertext}`,
@@ -56,7 +58,7 @@ export function buildSessionCookieHeader(
  * Genera la directiva Set-Cookie para invalidar y eliminar la sesión
  */
 export function buildClearCookieHeader(
-  isSecure = process.env.NODE_ENV === "production"
+  isSecure = getEnvVar("NODE_ENV") === "production"
 ): string {
   const parts = [
     `${SESSION_COOKIE_NAME}=`,

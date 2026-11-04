@@ -1,4 +1,5 @@
 import "server-only";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { ConfigurationError } from "@/lib/errors";
 
 export const ALLOWED_SII_ORIGIN = "https://sii.celaya.tecnm.mx";
@@ -6,12 +7,46 @@ export const DEFAULT_SII_TIMEOUT_MS = 8000;
 export const MAX_SESSION_DURATION_SECONDS = 3600; // Máximo 1 hora
 export const SESSION_COOKIE_NAME = "sii_session";
 
+export interface RequestEnv {
+  SESSION_SECRET?: string;
+  APP_ORIGIN?: string;
+  SII_BASE_URL?: string;
+  SII_TIMEOUT_MS?: string | number;
+  NODE_ENV?: string;
+  [key: string]: unknown;
+}
+
+export const requestEnvStorage = new AsyncLocalStorage<RequestEnv>();
+
+/**
+ * Lee una variable de entorno priorizando el contexto AsyncLocalStorage de la petición actual,
+ * con fallback a process.env para entornos locales (Next.js / Node / tests).
+ */
+export function getEnvVar(key: string): string | undefined {
+  const store = requestEnvStorage.getStore();
+  if (store) {
+    const val = store[key];
+    return val !== undefined && val !== null ? String(val) : undefined;
+  }
+  return process.env[key];
+}
+
+/**
+ * Ejecuta una función dentro del contexto AsyncLocalStorage del env de la petición.
+ */
+export function runWithEnv<T>(env: RequestEnv | undefined, fn: () => T): T {
+  if (!env) {
+    return fn();
+  }
+  return requestEnvStorage.run(env, fn);
+}
+
 /**
  * Obtiene y valida la clave secreta de 32 bytes para cifrado AES-256-GCM.
  * Si falta o no cumple con exactamente 32 bytes, lanza ConfigurationError (HTTP 503).
  */
 export function getSessionSecretBytes(): Uint8Array {
-  const secret = process.env.SESSION_SECRET?.trim();
+  const secret = getEnvVar("SESSION_SECRET")?.trim();
   if (!secret) {
     throw new ConfigurationError("SESSION_SECRET no configurado en el servidor");
   }
@@ -40,7 +75,7 @@ export function getSessionSecretBytes(): Uint8Array {
  * Retorna la URL base de SII, garantizando que el origen sea estrictamente https://sii.celaya.tecnm.mx.
  */
 export function getSiiBaseUrl(): string {
-  const custom = process.env.SII_BASE_URL?.trim();
+  const custom = getEnvVar("SII_BASE_URL")?.trim();
   if (custom) {
     let parsed: URL;
     try {
@@ -63,9 +98,9 @@ export function getSiiBaseUrl(): string {
  * Retorna el timeout en ms para peticiones SII.
  */
 export function getSiiTimeoutMs(): number {
-  const raw = process.env.SII_TIMEOUT_MS;
+  const raw = getEnvVar("SII_TIMEOUT_MS");
   if (raw) {
-    const parsed = parseInt(raw, 10);
+    const parsed = parseInt(String(raw), 10);
     if (!isNaN(parsed) && parsed > 0 && parsed <= 30000) {
       return parsed;
     }
