@@ -33,6 +33,15 @@ node_modules/
 dist/
 build/
 .next/
+.open-next/
+.wrangler/
+coverage/
+*.tsbuildinfo
 .venv/
 __pycache__/
 *.pyc
+
+# Variables privadas para el runtime Workers
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
