@@ -1,0 +1,38 @@
+# Documentación privada de equipo y agentes (conservar localmente)
+/BOVEDA_EXAMEN_SII/
+/.respaldo-local/
+/.agy-staff/
+/ESTILOS-DISEÑOS/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+/.codex/
+/.claude/
+/.gemini/
+/.github/ISSUE_TEMPLATE/tarea.md
+/.github/pull_request_template.md
+# Fuentes y capturas originales no revisadas
+/Examen 3-1.pdf
+/Imagen pegada*.png
+# Secretos, registros y estado local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.har
+*.log
+secrets/
+credentials/
+**/.obsidian/
+.DS_Store
+# Artefactos de compilación y dependencias
+node_modules/
+dist/
+build/
+.next/
+.venv/
+__pycache__/
+*.pyc
