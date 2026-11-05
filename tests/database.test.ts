@@ -470,4 +470,12 @@ describe("Supabase Database Helper & Protected Diagnostic Check", () => {
       expect(res.headers.get("cache-control")).toContain("no-store");
     });
   });
+ it("Worker usa Hyperdrive sin requerir URI externa ni exponer binding",async()=>{
+  const res=await worker.fetch(new Request(base+"/api/internal/database-check",{method:"POST",headers:{Authorization:`Bearer ${testToken}`}}),{HYPERDRIVE:{connectionString:"postgres://interno:solo-test@binding.local/postgres"},DATABASE_CHECK_TOKEN:testToken,DATABASE_CHECK_EXPIRES_AT:String(getFutureExpiry(600))},{});
+  expect(res.status).toBe(200);expect(JSON.stringify(await res.json())).not.toContain("binding.local");expect(mockEnd).toHaveBeenCalledTimes(1);
+ });
+ it("binding mal configurado falla sin conectar y sin caer a URI global",()=>{
+  expect(()=>createDatabaseClient({HYPERDRIVE:{connectionString:""}})).toThrow("Binding Hyperdrive inválido");expect(mockConnect).not.toHaveBeenCalled();
+ });
+
 });

@@ -19,7 +19,7 @@ import { normalizeKardex } from "@/lib/normalizers/kardex";
 import { normalizeSchedule } from "@/lib/normalizers/schedule";
 import { requireSession } from "@/lib/session";
 import { readBoundedText } from "@/lib/bounded-json";
-import { getSessionSecretBytes, getEnvVar } from "@/config/env";
+import { getSessionSecretBytes, getEnvVar, requestEnvStorage } from "@/config/env";
 import {
   AppError,
   AuthenticationError,
@@ -448,7 +448,7 @@ export async function handleDatabaseCheck(req: Request): Promise<Response> {
 
   // 3. Comprobación de configuración DB (503 si falta o es inválida)
   const dbUrl = getEnvVar("DATABASE_URL")?.trim();
-  if (!dbUrl) {
+  if (!dbUrl && !requestEnvStorage.getStore()?.HYPERDRIVE) {
     return Response.json(
       {
         success: false,

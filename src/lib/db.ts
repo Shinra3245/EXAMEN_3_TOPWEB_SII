@@ -1,6 +1,6 @@
 import "server-only";
 import { Client, ClientConfig } from "pg";
-import { getEnvVar, RequestEnv } from "@/config/env";
+import { getEnvVar, RequestEnv, requestEnvStorage } from "@/config/env";
 import { AppError, ConfigurationError } from "@/lib/errors";
 
 export const SUPABASE_DIRECT_HOST = "db.fegczgleshuzgymtqrkv.supabase.co";
@@ -153,6 +153,13 @@ export function parseAndValidateDatabaseUrl(rawUrl: string): ClientConfig {
  * No utiliza pool global para compatibilidad con el ciclo de vida de Cloudflare Workers.
  */
 export function createDatabaseClient(env?: RequestEnv): Client {
+  const context = env ?? requestEnvStorage.getStore();
+  if (context?.HYPERDRIVE) {
+    // Binding de confianza de Cloudflare; Hyperdrive verifica TLS con el origen.
+    // Este salto usa el transporte interno administrado por Workers.
+    if (typeof context.HYPERDRIVE.connectionString !== "string" || !context.HYPERDRIVE.connectionString) throw new ConfigurationError("Binding Hyperdrive inválido");
+    return new Client({ connectionString: context.HYPERDRIVE.connectionString, connectionTimeoutMillis: 5000, query_timeout: 5000 });
+  }
   const rawUrl =
     env?.DATABASE_URL !== undefined && env.DATABASE_URL !== null
       ? String(env.DATABASE_URL).trim()

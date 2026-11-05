@@ -13,6 +13,7 @@ export interface RequestEnv {
   SII_BASE_URL?: string;
   SII_TIMEOUT_MS?: string | number;
   DATABASE_URL?: string;
+  HYPERDRIVE?: { connectionString: string };
   DATABASE_CHECK_TOKEN?: string;
   DATABASE_CHECK_EXPIRES_AT?: string | number;
   NODE_ENV?: string;
