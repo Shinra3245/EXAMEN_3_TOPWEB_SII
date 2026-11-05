@@ -32,8 +32,8 @@ export function useResource<T>(path: string) {
     await load();
   }, [load]);
   // The effect synchronizes with an external API; state updates occur after its awaited response.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
     return () => controller.current?.abort();
   }, [load]);
