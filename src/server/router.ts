@@ -1,4 +1,5 @@
 import "server-only";
+import {handleDataVerification} from "./data-verification";
 import { handleSiiContract } from "./sii-contract";
 import { runWithEnv, RequestEnv } from "@/config/env";
 import {
@@ -21,6 +22,7 @@ interface RouteDefinition {
 }
 
 export const API_ROUTES: Record<string, RouteDefinition> = {
+  "/api/internal/data-verification":{allowedMethod:"POST",handler:handleDataVerification},
   "/api/internal/sii-contract": { allowedMethod: "POST", handler: handleSiiContract },
   "/api/health": { allowedMethod: "GET", handler: handleHealth },
   "/api/auth/login": { allowedMethod: "POST", handler: handleLogin },

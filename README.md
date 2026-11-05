@@ -82,3 +82,13 @@ En Workers se utiliza el binding `HYPERDRIVE` del proyecto del examen. Hyperdriv
 ## Inspección del contrato institucional
 
 POST /api/internal/sii-contract está deshabilitado por defecto. Para mantenimiento requiere una sesiónSII válida y token privado SII_CONTRACT_TOKEN con SII_CONTRACT_EXPIRES_AT Unix vigente máximo30min. Devuelve únicamente nombres técnicos de campos, tipos y categorías de formato; no valores de alumnos. Muestrea hasta8elementos por colección y no acredita completitud. No es endpoint de interfaz; retirar token tras inspección.
+
+## Frontera de datos y migraciones
+
+La conexión publicada de Hyperdrive usa `examen_app_runtime`, sin superusuario, BYPASSRLS, creación de bases o roles. Las migraciones requieren la sesión administrativa del propietario y nunca se ejecutan desde la UI o con el rol de aplicación. `scripts/migrate.py --through 0001` muestra el plan; añadir `--apply` ejecuta una versión explícita contra el proyecto institucional, en transacciones con bloqueo y ledger privado `app_meta.migrations`. Un checksum distinto para una versión ya aplicada se rechaza: agregar otra migración, no editar historia aplicada.
+
+`withStudentDatabase(req, callback)` valida la cookie SII y fija la identidad solo durante una transacción mediante `set_config` parametrizado. La identidad no procede de parámetros o cuerpos del navegador. Tablas futuras deben tener ownership y políticas RLS acordes al módulo; RLS complementa autenticación/consultas parametrizadas y no protege frente a un backend comprometido con SQL arbitrario. No almacenar datos académicos como maestros locales.
+
+Las migraciones0002/0003 crean y retiran una tabla exclusivamente técnica para validar commit/reconexión, aislamientoA/B, rechazo de escrituras ajenas y rollback con datos sintéticos. No es el modelo del adicional. El diagnóstico POST /api/internal/data-verification está deshabilitado sin DATA_VERIFY_TOKEN y DATA_VERIFY_EXPIRES_AT vigentes (máximo30min); solo acepta fases/UUID y SQL fijo, sin actores o consultas arbitrarias. Retirar secretos después de verificar.
+
+Recuperación: la ejecución fallida revierte la transacción; conservar ledger/checksums y revisar antes de reintentar. Para futuros cambios de negocio, preparar una migración correctiva y respaldo/recuperación según el impacto; no usar resets o CASCADE sobre entrega.

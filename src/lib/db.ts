@@ -192,7 +192,7 @@ export async function withDatabase<T>(
       throw error;
     }
     const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
-    const safeCodes = new Set(["28P01", "28000", "CERT_HAS_EXPIRED", "SELF_SIGNED_CERT_IN_CHAIN", "UNABLE_TO_VERIFY_LEAF_SIGNATURE", "DEPTH_ZERO_SELF_SIGNED_CERT", "ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "ERR_TLS_CERT_ALTNAME_INVALID"]);
+    const safeCodes = new Set(["42501", "28P01", "28000", "CERT_HAS_EXPIRED", "SELF_SIGNED_CERT_IN_CHAIN", "UNABLE_TO_VERIFY_LEAF_SIGNATURE", "DEPTH_ZERO_SELF_SIGNED_CERT", "ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "ERR_TLS_CERT_ALTNAME_INVALID"]);
     if (safeCodes.has(code)) throw new AppError(503, `DATABASE_${code}`, "No se pudo establecer la conexión segura con la base de datos");
     const message = error instanceof Error ? error.message : "";
     const categories = [ ["password authentication", "AUTH"], ["Tenant", "TENANT"], ["self-signed", "CERTIFICATE"], ["SASL", "SASL"], ["SSL", "SSL"], ["TLS", "TLS"], ["Connection terminated", "TERMINATED"], ["timeout", "TIMEOUT"], ["not implemented", "UNSUPPORTED"], ["Cloudflare", "RUNTIME"], ["connect", "CONNECT"] ];
