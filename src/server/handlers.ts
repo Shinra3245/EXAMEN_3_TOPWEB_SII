@@ -19,7 +19,7 @@ import { normalizeKardex } from "@/lib/normalizers/kardex";
 import { normalizeSchedule } from "@/lib/normalizers/schedule";
 import { requireSession } from "@/lib/session";
 import { readBoundedText } from "@/lib/bounded-json";
-import { getSessionSecretBytes, getEnvVar, requestEnvStorage } from "@/config/env";
+import { getSessionSecretBytes, getEnvVar, requestEnvStorage, isAdministrator } from "@/config/env";
 import {
   AppError,
   AuthenticationError,
@@ -179,12 +179,15 @@ export async function handleSession(req: Request): Promise<Response> {
     const headers = new Headers();
     setPrivateCacheHeaders(headers);
 
+    const esAdmin = isAdministrator(session.numero_control);
+
     return Response.json(
       {
         success: true,
         data: {
           authenticated: true,
           student,
+          es_admin: esAdmin,
           expiresAt: session.exp,
         },
       },

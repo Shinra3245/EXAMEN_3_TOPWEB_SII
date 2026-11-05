@@ -16,6 +16,7 @@ export interface RequestEnv {
   HYPERDRIVE?: { connectionString: string };
   DATABASE_CHECK_TOKEN?: string;
   DATABASE_CHECK_EXPIRES_AT?: string | number;
+  ADMIN_NUMEROS_CONTROL?: string;
   NODE_ENV?: string;
   [key: string]: unknown;
 }
@@ -110,4 +111,26 @@ export function getSiiTimeoutMs(): number {
     }
   }
   return DEFAULT_SII_TIMEOUT_MS;
+}
+
+/**
+ * Retorna la lista de números de control autorizados como administradores
+ * a partir de la variable ADMIN_NUMEROS_CONTROL (separada por comas).
+ */
+export function getAdminControlNumbers(): string[] {
+  const raw = getEnvVar("ADMIN_NUMEROS_CONTROL");
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((item) => item.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+/**
+ * Determina si un número de control dado pertenece a los administradores configurados.
+ */
+export function isAdministrator(numeroControl: string | undefined | null): boolean {
+  if (!numeroControl) return false;
+  const admins = getAdminControlNumbers();
+  return admins.includes(numeroControl.trim().toUpperCase());
 }

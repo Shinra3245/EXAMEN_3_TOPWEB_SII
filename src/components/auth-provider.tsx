@@ -19,6 +19,7 @@ export type AuthStatus =
   | "error";
 interface AuthContextType {
   student: StudentProfileDTO | null;
+  esAdmin: boolean;
   status: AuthStatus;
   message: string | null;
   login(email: string, password: string): Promise<void>;
@@ -28,6 +29,7 @@ interface AuthContextType {
 interface SessionData {
   authenticated: boolean;
   student: StudentProfileDTO;
+  es_admin?: boolean;
   expiresAt: number;
 }
 interface LoginData {
@@ -37,6 +39,7 @@ interface LoginData {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [student, setStudent] = useState<StudentProfileDTO | null>(null);
+  const [esAdmin, setEsAdmin] = useState(false);
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -63,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     expires.current = null;
     identity.current = null;
     setStudent(null);
+    setEsAdmin(false);
     setStatus("unauthenticated");
     setMessage(null);
   }, [clearTimer]);
@@ -75,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { id: generation.current, signal: next.signal };
   }, []);
   const accept = useCallback(
-    (profile: StudentProfileDTO, expiration: number) => {
+    (profile: StudentProfileDTO, expiration: number, isAdmin?: boolean) => {
       if (
         !profile?.numero_control ||
         !Number.isFinite(expiration) ||
@@ -95,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimer();
       expires.current = expiration;
       setStudent(profile);
+      setEsAdmin(Boolean(isAdmin));
       setStatus("authenticated");
       setMessage(null);
       timer.current = setTimeout(
@@ -115,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (generation.current === request.id) {
         if (!data.authenticated)
           throw new ApiClientError("Sesión no válida", 401);
-        accept(data.student, data.expiresAt);
+        accept(data.student, data.expiresAt, data.es_admin);
       }
     } catch (error) {
       if (request.signal.aborted || generation.current !== request.id) return;
@@ -153,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (generation.current === request.id && !request.signal.aborted) {
           if (!data.authenticated)
             throw new ApiClientError("Sesión no válida", 401);
-          accept(data.student, data.expiresAt);
+          accept(data.student, data.expiresAt, data.es_admin);
           router.replace("/dashboard");
         }
       } catch (error) {
@@ -219,8 +224,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [clearTimer, invalidate, refresh, stopRequest]);
   const value = useMemo(
-    () => ({ student, status, message, login, logout, refresh }),
-    [student, status, message, login, logout, refresh],
+    () => ({ student, esAdmin, status, message, login, logout, refresh }),
+    [student, esAdmin, status, message, login, logout, refresh],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

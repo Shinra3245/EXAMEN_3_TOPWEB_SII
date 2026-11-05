@@ -63,6 +63,36 @@ export class DatabaseError extends AppError {
   }
 }
 
+export class ValidationError extends AppError {
+  constructor(
+    message = "Datos de entrada no válidos",
+    errorCode = "VALIDATION_ERROR"
+  ) {
+    super(422, errorCode, message, true);
+    this.name = "ValidationError";
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(
+    message = "Conflicto con el estado actual del recurso",
+    errorCode = "CONFLICT"
+  ) {
+    super(409, errorCode, message, true);
+    this.name = "ConflictError";
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(
+    message = "Recurso no encontrado",
+    errorCode = "NOT_FOUND"
+  ) {
+    super(404, errorCode, message, true);
+    this.name = "NotFoundError";
+  }
+}
+
 export function toSafeErrorResponse(
   error: unknown,
   fallbackMessage = "Error interno del servidor"
