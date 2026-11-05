@@ -15,3 +15,14 @@ export function numberOrNull(value: unknown): number | null {
 export function grade(value: unknown): string | null {
   return typeof value === "string" ? value : typeof value === "number" && Number.isFinite(value) ? String(value) : null;
 }
+
+export function decimalOrNull(value:unknown):number|null {
+ if(typeof value==="string"){
+  const s=value.trim();if(!/^\d+(?:\.\d+)?$/.test(s))return null;value=Number(s);
+ }
+ return typeof value==="number"&&Number.isFinite(value)&&value>=0?value:null;
+}
+export function periodo(value:unknown):import("@/types/normalizers").PeriodoDTO|null {
+ if(value===undefined||value===null)return null;
+ const row=object(value);return {clave_periodo:text(row.clave_periodo),anio:numberOrNull(row.anio),descripcion_periodo:text(row.descripcion_periodo)};
+}

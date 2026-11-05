@@ -53,11 +53,17 @@ El token se obtiene exclusivamente de `message.login.token` y se valida consulta
 
 Entrada de login limitada a 16 KiB; respuesta institucional limitada a 1 MiB durante lectura; timeout activo hasta finalizar esa lectura. Solo se permiten cinco rutas institucionales y se rechazan redirecciones. No hay memoria global con datos de estudiantes, reenvío de cuerpos crudos ni cacheado de respuestas privadas.
 
-## Mapeo institucional pendiente
+## Contrato académico
 
-Se proyectan únicamente campos confirmados. No se devuelven objetos `unknown` ni claves arbitrarias. El perfil exige `numero_control`; `semestre` ausente se representa como `null`. En calificaciones, `resultadoFinal` y los metadatos de periodo siguen `null` hasta confirmar su semántica; no se calcula un promedio ni se toma la última evaluación como final. Se conserva `calificacion` solo en una colección de evaluaciones inequívoca. En kardex se conservan intentos repetidos, cadenas y nulos. Los horarios conservan días como `string | null`, sin inferir aulas/docentes o parsear horas todavía.
+Los normalizadores proyectan únicamente campos institucionales observados. Perfil incluye `persona`, identidad, semestre, foto e indicadores oficiales; indicadores vacíos o no numéricos son null, sin recalcular promedios. Periodos de calificaciones/horario usan `clave_periodo`, `anio` y `descripcion_periodo`.
 
-Las pruebas automatizadas usan datos sintéticos y no acreditan el flujo autenticado real. La validación autenticada de la aplicación requiere introducir credenciales propias de forma privada y verificar los recursos en el entorno publicado. No se incluye todavía persistencia de la funcionalidad adicional.
+Evaluaciones se obtienen de la clave literal institucional `calificaiones` y conservan `numero_calificacion`, `calificacion`, orden y nulos. Arreglos auxiliares no se interpretan como calificaciones. **No hay una correspondencia oficial confirmada para la nota final:** `resultadoFinal` sigue null; no promediar ni usar la última evaluación o el kardex para inventarla. El portal observado solo etiqueta Calificación1..4. Este punto del examen necesita aclaración del criterio de final.
+
+Kardex conserva todos los registros recibidos e intentos repetidos, junto con porcentaje_avance oficial. No se afirma que una respuesta equivalga a historial institucional exhaustivo si el proveedor pagina o filtra sin metadatos.
+
+Horario conserva días originales y agrega `sesiones` con dia/inicio/fin/salon desde el rango y `${dia}_clave_salon`. Se validan rangos24h HH:MM o HH:MM:00, minutos0..59 e inicio anterior a fin. Textos/rangos múltiples no confirmados se conservan y marcan en `diasNoInterpretados`; no se inventan aulas, docentes o franjas. Las pantallas deberán tratar ese estado de forma visible.
+
+Las pruebas usan fixtures sintéticos y no acreditan por sí solas funcionamiento del SII real. No se incluye todavía persistencia de la funcionalidad adicional.
 
 ## Cloudflare y CI
 
@@ -72,3 +78,7 @@ GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El d
 POST /api/internal/database-check es diagnóstico de mantenimiento: requiere Bearer DATABASE_CHECK_TOKEN privado y DATABASE_CHECK_EXPIRES_AT Unix vigente, máximo30min. Deshabilitado devuelve404; sin configuraciónDB503. Ejecuta lectura y escritura temporal con rollback, devuelve solo booleans. No acredita persistencia ni reglas del adicional. Retirar token después del ensayo. Nunca configurar credenciales por Git o logs ni consultar esta ruta desde la UI.
 
 En Workers se utiliza el binding `HYPERDRIVE` del proyecto del examen. Hyperdrive verifica TLS con el origen Supabase (`verify-full`, CA pública de Supabase), caché desactivada y límite de5conexiones. La conexión interna administrada se obtiene del binding; no se aplica el validador de URI externa a ese transporte. DATABASE_URL queda como alternativa para desarrollo local Node. No registrar connectionString del binding.
+
+## Inspección del contrato institucional
+
+POST /api/internal/sii-contract está deshabilitado por defecto. Para mantenimiento requiere una sesiónSII válida y token privado SII_CONTRACT_TOKEN con SII_CONTRACT_EXPIRES_AT Unix vigente máximo30min. Devuelve únicamente nombres técnicos de campos, tipos y categorías de formato; no valores de alumnos. Muestrea hasta8elementos por colección y no acredita completitud. No es endpoint de interfaz; retirar token tras inspección.
