@@ -71,17 +71,15 @@ describe("same-origin API client", () => {
   it("announces current unauthorized responses", async () => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          Response.json(
-            {
-              success: false,
-              error: { code: "EXPIRED", message: "Sesión expirada" },
-            },
-            { status: 401 },
-          ),
+      vi.fn().mockResolvedValue(
+        Response.json(
+          {
+            success: false,
+            error: { code: "EXPIRED", message: "Sesión expirada" },
+          },
+          { status: 401 },
         ),
+      ),
     );
     await expect(apiRequest("/api/grades")).rejects.toMatchObject({
       status: 401,
@@ -118,4 +116,43 @@ describe("same-origin API client", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
     expect(dispatchEvent).not.toHaveBeenCalled();
   });
+});
+
+it("rejects successful data that belongs to a previous session epoch", async () => {
+  let resolve!: (response: Response) => void;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockReturnValue(
+      new Promise<Response>((r) => {
+        resolve = r;
+      }),
+    ),
+  );
+  const result = apiRequest("/api/student");
+  advanceApiEpoch();
+  resolve(Response.json({ success: true, data: { synthetic: "old-session" } }));
+  await expect(result).rejects.toMatchObject({ name: "AbortError" });
+});
+it("login rejection reports credentials without invalidating a session globally", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue(
+        Response.json(
+          {
+            success: false,
+            error: {
+              code: "INVALID_CREDENTIALS",
+              message: "Credenciales inválidas",
+            },
+          },
+          { status: 401 },
+        ),
+      ),
+  );
+  await expect(
+    apiRequest("/api/auth/login", { method: "POST" }),
+  ).rejects.toMatchObject({ status: 401, code: "INVALID_CREDENTIALS" });
+  expect(dispatchEvent).not.toHaveBeenCalled();
 });

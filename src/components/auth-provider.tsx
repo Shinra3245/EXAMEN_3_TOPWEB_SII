@@ -43,6 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);
   const busy = useRef(false);
+  const refreshing = useRef(false);
+  const identity = useRef<string | null>(null);
   const expires = useRef<number | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopRequest = useCallback(() => {
@@ -59,13 +61,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     controller.current?.abort();
     clearTimer();
     expires.current = null;
+    identity.current = null;
     setStudent(null);
     setStatus("unauthenticated");
     setMessage(null);
   }, [clearTimer]);
-  const begin = useCallback(() => {
+  const begin = useCallback((newSession = false) => {
     generation.current++;
-    advanceApiEpoch();
+    if (newSession) advanceApiEpoch();
     controller.current?.abort();
     const next = new AbortController();
     controller.current = next;
@@ -83,6 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           401,
           "SESSION_EXPIRED",
         );
+      if (
+        identity.current !== null &&
+        identity.current !== profile.numero_control
+      )
+        advanceApiEpoch();
+      identity.current = profile.numero_control;
       clearTimer();
       expires.current = expiration;
       setStudent(profile);
@@ -96,7 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [clearTimer, invalidate],
   );
   const refresh = useCallback(async () => {
-    if (busy.current) return;
+    if (busy.current || refreshing.current) return;
+    refreshing.current = true;
     const request = begin();
     try {
       const data = await apiRequest<SessionData>("/api/auth/session", {
@@ -121,13 +131,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : "No fue posible verificar la sesión. Intenta de nuevo.",
         );
       }
+    } finally {
+      refreshing.current = false;
     }
   }, [accept, begin, clearTimer, invalidate]);
   const login = useCallback(
     async (email: string, password: string) => {
       if (busy.current) return;
       busy.current = true;
-      const request = begin();
+      const request = begin(true);
       setMessage(null);
       try {
         await apiRequest<LoginData>("/api/auth/login", {

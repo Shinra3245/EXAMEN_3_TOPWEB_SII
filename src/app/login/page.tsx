@@ -106,8 +106,26 @@ export default function LoginPage() {
             Formulario de inicio de sesión
           </h2>
 
-          {status === "loading" && <p role="status"><progress aria-label="Verificando sesión" /> Verificando sesión…</p>}
-          {status === "error" && <div role="alert" className="error"><p>{sessionMessage || "No se pudo verificar la sesión existente."}</p><button type="button" onClick={() => { void refresh(); }}>Reintentar verificación de sesión</button></div>}
+          {status === "loading" && (
+            <p role="status">
+              <progress aria-label="Verificando sesión" /> Verificando sesión…
+            </p>
+          )}
+          {status === "error" && (
+            <div role="alert" className="error">
+              <p>
+                {sessionMessage || "No se pudo verificar la sesión existente."}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  void refresh();
+                }}
+              >
+                Reintentar verificación de sesión
+              </button>
+            </div>
+          )}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <fieldset disabled={isSubmitting} className="space-y-4">
               <legend className="sr-only">Credenciales de acceso</legend>

@@ -82,6 +82,7 @@ export async function apiRequest<T>(
     throw new DOMException("Request aborted", "AbortError");
   if (
     response.status === 401 &&
+    url.pathname !== "/api/auth/login" &&
     requestEpoch === epoch &&
     typeof window !== "undefined"
   )
@@ -94,6 +95,8 @@ export async function apiRequest<T>(
       response.status,
       typeof body?.error?.code === "string" ? body.error.code : undefined,
     );
+  if (requestEpoch !== epoch)
+    throw new DOMException("Session changed", "AbortError");
   if (body?.success !== true || !Object.hasOwn(body, "data"))
     throw new ApiClientError(
       "La respuesta del servicio no es válida. Intenta de nuevo.",
