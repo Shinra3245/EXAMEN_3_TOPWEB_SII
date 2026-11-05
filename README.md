@@ -72,3 +72,7 @@ GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El d
 POST /api/internal/database-check es diagnóstico de mantenimiento: requiere Bearer DATABASE_CHECK_TOKEN privado y DATABASE_CHECK_EXPIRES_AT Unix vigente, máximo30min. Deshabilitado devuelve404; sin configuraciónDB503. Ejecuta lectura y escritura temporal con rollback, devuelve solo booleans. No acredita persistencia ni reglas del adicional. Retirar token después del ensayo. Nunca configurar credenciales por Git o logs ni consultar esta ruta desde la UI.
 
 En Workers se utiliza el binding `HYPERDRIVE` del proyecto del examen. Hyperdrive verifica TLS con el origen Supabase (`verify-full`, CA pública de Supabase), caché desactivada y límite de5conexiones. La conexión interna administrada se obtiene del binding; no se aplica el validador de URI externa a ese transporte. DATABASE_URL queda como alternativa para desarrollo local Node. No registrar connectionString del binding.
+
+## Inspección del contrato institucional
+
+POST /api/internal/sii-contract está deshabilitado por defecto. Para mantenimiento requiere una sesiónSII válida y token privado SII_CONTRACT_TOKEN con SII_CONTRACT_EXPIRES_AT Unix vigente máximo30min. Devuelve únicamente nombres técnicos de campos, tipos y categorías de formato; no valores de alumnos. Muestrea hasta8elementos por colección y no acredita completitud. No es endpoint de interfaz; retirar token tras inspección.
