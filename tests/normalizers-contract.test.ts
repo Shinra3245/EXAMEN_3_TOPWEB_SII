@@ -12,7 +12,7 @@ describe("Contrato institucional observado E10",()=>{
   expect(out.materias[0].evaluaciones).toEqual([{numero_calificacion:2,calificacion:"64"},{numero_calificacion:1,calificacion:null},{numero_calificacion:4,calificacion:"97"}]);expect(out.materias[0].resultadoFinal).toBeNull();
  });
  it("no interpreta arreglos desconocidos como notas",()=>{
-  const out=normalizeGrades([{materias:[{materia:{},otras:[{calificacion:"90"}]}]}]);expect(out[0].materias[0].evaluaciones).toEqual([]);
+  expect(()=>normalizeGrades([{materias:[{materia:{},otras:[{calificacion:"90"}]}]}])).toThrow();
  });
  it("mantiene cero oficial y nulos sin recalcular indicadores",()=>{
   const out=normalizeStudentProfile({numero_control:"TEST",persona:"Persona sintética",promedio_ponderado:"64.25",materias_reprobadas:"0",materias_cursadas:"",creditos_acumulados:null,percentaje_avance_cursando:0,secreto:"OMITIR"});
