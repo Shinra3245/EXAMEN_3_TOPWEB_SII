@@ -231,7 +231,7 @@ export function AppShell({ children }: AppShellProps) {
         </aside>
       )}
 
-      <main id="main-content" className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+      <main key={student?.numero_control ?? "anonymous"} id="main-content" className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
         {children}
       </main>
     </div>
