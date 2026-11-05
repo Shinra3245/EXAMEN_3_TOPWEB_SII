@@ -10,7 +10,7 @@ describe("Contexto transaccional de estudiante",()=>{
  it("usa identidad de cookie, ignora actor del cliente y parametriza set_config",async()=>{
   const req=new Request("https://portal.invalid/api/data?actor=TEST-B",{headers:{"x-student-id":"TEST-B"}});
   await withStudentDatabase(req,async c=>{await c.query("SELECT 1");return true;});
-  expect(mocks.query.mock.calls).toEqual([["BEGIN"],["SELECT set_config('app.student_id', $1, true)",["TEST-A"]],["SELECT 1"],["COMMIT"]]);
+  expect(mocks.query.mock.calls).toEqual([["BEGIN"],["SELECT set_config('app.student_id', $1, true)",["TEST-A"]],["SELECT set_config('app.is_admin', $1, true)",["false"]],["SELECT 1"],["COMMIT"]]);
  });
  it("sin sesión no abre base de datos",async()=>{
   mocks.session.mockRejectedValueOnce(new Error("sin sesión"));

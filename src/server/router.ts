@@ -14,6 +14,17 @@ import {
   handleSchedule,
   handleDatabaseCheck,
 } from "./handlers";
+import {
+  handleListReports,
+  handleCreateReport,
+  handleConfirmReport,
+  handleWithdrawReport,
+  handleListFaultTypes,
+  handleAdminUpdateReport,
+  handleAdminListFaultTypes,
+  handleAdminSaveFaultType,
+  handleAdminReportsSummary,
+} from "./room-reports";
 
 type HttpMethod = "GET" | "POST";
 
@@ -35,6 +46,15 @@ export const API_ROUTES: Record<string, RouteDefinition> = {
   "/api/kardex": { allowedMethod: "GET", handler: handleKardex },
   "/api/schedule": { allowedMethod: "GET", handler: handleSchedule },
   "/api/internal/database-check": { allowedMethod: "POST", handler: handleDatabaseCheck },
+  "/api/reports": { allowedMethod: "GET", handler: handleListReports },
+  "/api/reports/create": { allowedMethod: "POST", handler: handleCreateReport },
+  "/api/reports/confirm": { allowedMethod: "POST", handler: handleConfirmReport },
+  "/api/reports/withdraw": { allowedMethod: "POST", handler: handleWithdrawReport },
+  "/api/report-types": { allowedMethod: "GET", handler: handleListFaultTypes },
+  "/api/admin/reports/update": { allowedMethod: "POST", handler: handleAdminUpdateReport },
+  "/api/admin/reports/summary": { allowedMethod: "GET", handler: handleAdminReportsSummary },
+  "/api/admin/report-types": { allowedMethod: "GET", handler: handleAdminListFaultTypes },
+  "/api/admin/report-types/save": { allowedMethod: "POST", handler: handleAdminSaveFaultType },
 };
 
 /**

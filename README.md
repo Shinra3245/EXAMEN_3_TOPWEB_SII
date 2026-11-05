@@ -1,6 +1,6 @@
 # Portal académico SII
 
-Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers mediante OpenNext 1.20.16. Toda comunicación con el SII, incluido el login, ocurre en el servidor. Interfaz funcional neutra con inicio de sesión, dashboard, calificaciones, kardex y horario. El estilo visual final y la funcionalidad adicional se incorporarán por separado.
+Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers mediante OpenNext 1.20.16. Toda comunicación con el SII, incluido el login, ocurre en el servidor. Interfaz funcional neutra con inicio de sesión, dashboard, calificaciones, kardex, horario y reportes de fallas en aulas. El estilo visual final se incorpora por separado. El módulo de reportes requiere aplicar la migración 0004 antes de habilitarse en el entorno publicado.
 
 Piloto técnico: https://examen3-sii.shinra3245.workers.dev
 
@@ -64,7 +64,31 @@ Kardex conserva todos los registros recibidos e intentos repetidos, junto con po
 
 Horario conserva días originales y agrega `sesiones` con dia/inicio/fin/salon desde el rango y `${dia}_clave_salon`. Se validan rangos24h HH:MM o HH:MM:00, minutos0..59 e inicio anterior a fin. Textos/rangos múltiples no confirmados se conservan y marcan en `diasNoInterpretados`; no se inventan aulas, docentes o franjas. Las pantallas deberán tratar ese estado de forma visible.
 
-Las pruebas usan fixtures sintéticos y no acreditan por sí solas funcionamiento del SII real. No se incluye todavía persistencia de la funcionalidad adicional.
+Las pruebas usan fixtures sintéticos y no acreditan por sí solas funcionamiento del SII real. La persistencia de reportes de aulas se define en la migración 0004; su validación local no acredita persistencia publicada.
+
+## Reportes de fallas en aulas
+
+Desde cada sesión con salón en Horario se puede reportar una falla con tipo y descripción. El backend reconsulta el horario SII y deriva salón, materia y periodo de una coincidencia institucional exacta; no confía en esos valores enviados por el cliente. Rechaza sesiones ambiguas y reportes abiertos duplicados por alumno/sesión.
+
+`/reportes` permite filtrar el listado, apoyar reportes abiertos ajenos una vez y retirar los propios únicamente en estado recibido. Los alumnos ven todos los reportes sin identidades ajenas. Las vistas SQL enmascaran reportante y administrador; RLS limita las tablas base a datos propios o administrativos y los apoyos se cuentan mediante una función sin salida de identidades.
+
+`/admin/reportes` administra estado, prioridad y comentario de seguimiento; `/admin/tipos` gestiona el catálogo. El resumen incluye exclusivamente totales de reportes por estado y salones con más fallas. Las rutas administrativas exigen autorización en backend. `ADMIN_NUMEROS_CONTROL` es una lista separada por comas de números de control autorizados, comparada con la identidad de la sesión cifrada; `GET /api/auth/session` devuelve `es_admin` para la navegación. Si se omite la variable, nadie obtiene administración.
+
+| Método | Ruta | Acción |
+|---|---|---|
+| GET | /api/reports | Listar; filtros salon, tipo_id, estado, periodo y mine. |
+| POST | /api/reports/create | Crear desde una sesión revalidada del horario. |
+| POST | /api/reports/confirm | Apoyar un reporte abierto ajeno. |
+| POST | /api/reports/withdraw | Retirar un reporte propio recibido. |
+| GET | /api/report-types | Catálogo activo para crear reportes. |
+| POST | /api/admin/reports/update | Cambiar estado/prioridad con comentario. |
+| GET | /api/admin/reports/summary | Resumen de estados y salones. |
+| GET | /api/admin/report-types | Catálogo completo, incluidos inactivos. |
+| POST | /api/admin/report-types/save | Crear/editar/activar tipos de falla. |
+
+Preparación del entorno: aplicar `database/migrations/0004_room_reports.sql` como propietario `postgres` después de las migraciones anteriores y configurar `ADMIN_NUMEROS_CONTROL` en el Worker. Las vistas y la función agregadora deben conservar el propietario de migración, que puede leer las tablas para producir proyecciones anónimas. No conceder sus tablas ni funciones a clientes del navegador. El rol de conexión es privado del backend, que fija identidad y administración dentro de cada transacción; estas variables no son una autenticación para clientes SQL no confiables.
+
+La regresión `database/tests/room_reports.sql` se ejecuta mediante `psql` en una base de pruebas con las migraciones aplicadas. Utiliza únicamente fixtures sintéticos y termina con rollback. No ejecutarla contra producción.
 
 ## Cloudflare y CI
 
@@ -74,7 +98,7 @@ GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El d
 
 ## PostgreSQL de servidor
 
-`src/lib/db.ts` usa pg y TLS con verificación de certificado, un cliente por operación y cierre en finally. En producción la conexión utiliza exclusivamente Hyperdrive y el rol restringido del proyecto. `DATABASE_URL` es una alternativa privada para Node; no se usa en el Worker publicado. No usar prepared statements nombrados. No hay ORM ni tablas del adicional. Usar `withDatabase` para operaciones parametrizadas del módulo de datos.
+`src/lib/db.ts` usa pg y TLS con verificación de certificado, un cliente por operación y cierre en finally. En producción la conexión utiliza exclusivamente Hyperdrive y el rol restringido del proyecto. `DATABASE_URL` es una alternativa privada para Node; no se usa en el Worker publicado. No usar prepared statements nombrados. No hay ORM; las tablas de reportes usan el esquema `app`. Usar `withStudentDatabase` para operaciones del módulo con contexto transaccional de identidad y administración, y consultas parametrizadas.
 
 POST /api/internal/database-check es diagnóstico de mantenimiento: requiere Bearer DATABASE_CHECK_TOKEN privado y DATABASE_CHECK_EXPIRES_AT Unix vigente, máximo30min. Deshabilitado devuelve404; sin configuraciónDB503. Ejecuta lectura y escritura temporal con rollback, devuelve solo booleans. No acredita persistencia ni reglas del adicional. Retirar token después del ensayo. Nunca configurar credenciales por Git o logs ni consultar esta ruta desde la UI.
 

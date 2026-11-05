@@ -17,13 +17,24 @@ const NAV_LINKS = [
 ];
 
 export function AppShell({ children }: AppShellProps) {
-  const { student, status, message, refresh, logout } = useAuth();
+  const { student, esAdmin, status, message, refresh, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const navLinks = [
+    ...NAV_LINKS,
+    { href: "/reportes", label: "Reportes" },
+    ...(esAdmin
+      ? [
+          { href: "/admin/reportes", label: "Admin: Reportes" },
+          { href: "/admin/tipos", label: "Admin: Tipos" },
+        ]
+      : []),
+  ];
 
   // Redirigir a login si el estado es unauthenticated
   useEffect(() => {
@@ -141,7 +152,7 @@ export function AppShell({ children }: AppShellProps) {
               className="hidden sm:flex sm:items-center sm:gap-4"
               aria-label="Navegación principal"
             >
-              {NAV_LINKS.map((link) => {
+              {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
@@ -177,7 +188,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-label="Navegación móvil"
             >
               <ul className="flex flex-col gap-2 list-none p-0 m-0">
-                {NAV_LINKS.map((link) => {
+                {navLinks.map((link) => {
                   const isActive = pathname === link.href;
                   return (
                     <li key={link.href}>
