@@ -132,7 +132,7 @@ describe("Normalizador de Calificaciones", () => {
               clave_materia: "SCD1021",
               extra_materia: "datos_internos",
             },
-            unidades_evaluacion_arbitraria: [
+            calificaiones: [
               { unidad: 1, calificacion: "80" },
               { unidad: 2, calificacion: "90" },
               { unidad: 3, calificacion: null },
@@ -205,8 +205,8 @@ describe("Normalizador de Horarios", () => {
 
 describe("Fronteras de datos no confirmados",()=>{
  it("no expone periodos o datos desconocidos en evaluaciones",()=>{
-  const result=normalizeGrades([{periodo:{secreto:"NO_PUBLICAR"},materias:[{materia:{nombre_materia:"Materia",clave_materia:"M1"},evaluaciones:[{calificacion:null,secreto:"NO_PUBLICAR"}]}]}]);
-  expect(JSON.stringify(result)).not.toContain("NO_PUBLICAR");expect(result[0].periodo).toBeNull();expect(result[0].materias[0].evaluaciones).toEqual([{calificacion:null}]);
+  const result=normalizeGrades([{periodo:{secreto:"NO_PUBLICAR"},materias:[{materia:{nombre_materia:"Materia",clave_materia:"M1"},calificaiones:[{numero_calificacion:1,calificacion:null,secreto:"NO_PUBLICAR"}]}]}]);
+  expect(JSON.stringify(result)).not.toContain("NO_PUBLICAR");expect(result[0].periodo).toEqual({clave_periodo:"",anio:null,descripcion_periodo:""});expect(result[0].materias[0].evaluaciones).toEqual([{numero_calificacion:1,calificacion:null}]);
  });
  it("no transforma semestre desconocido en cero",()=>{
   expect(normalizeStudentProfile({numero_control:"TEST"}).semestre).toBeNull();
