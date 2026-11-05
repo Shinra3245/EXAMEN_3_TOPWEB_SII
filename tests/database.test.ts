@@ -91,7 +91,7 @@ describe("Supabase Database Helper & Protected Diagnostic Check", () => {
       expect(config.password).toBe("secretpassword");
       expect(config.ssl).toEqual({ rejectUnauthorized: true });
       expect(config.connectionTimeoutMillis).toBe(5000);
-      expect(config.statement_timeout).toBe(5000);
+      expect(config.statement_timeout).toBeUndefined();
       expect(config.query_timeout).toBe(5000);
     });
 
@@ -185,7 +185,7 @@ describe("Supabase Database Helper & Protected Diagnostic Check", () => {
         withDatabase(async () => {
           return "should not be reached";
         })
-      ).rejects.toThrow("Error en la operación de base de datos");
+      ).rejects.toThrow("La conexión de base de datos no se completó");
 
       expect(mockEnd).toHaveBeenCalledTimes(1);
     });
