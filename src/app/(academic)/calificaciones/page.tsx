@@ -69,7 +69,11 @@ export default function GradesPage() {
           </label>
           <label>
             Periodo
-            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <select
+              aria-label="Periodo"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
               <option value="">Todos los periodos</option>
               {resource.data?.map((group, i) => (
                 <option key={i} value={i}>
