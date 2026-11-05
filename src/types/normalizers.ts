@@ -28,10 +28,17 @@ export interface KardexDTO {
   kardex: KardexItemDTO[];
 }
 
-export interface NormalizedGradeMateria {
+export interface FinalCalculationDTO {
+  resultadoFinal: number | null;
+  estadoFinal: "calculada" | "pendiente";
+  origenFinal: "calculada" | null;
+  motivoFinal: "parciales_incompletos" | "numeracion_invalida" | "evaluaciones_duplicadas" | "calificaciones_invalidas" | null;
+  reglaFinal: "promedio_4_parciales_redondeo_entero";
+}
+
+export interface NormalizedGradeMateria extends FinalCalculationDTO {
   nombre_materia: string;
   clave_materia: string;
-  resultadoFinal: null;
   evaluaciones: Array<{ numero_calificacion: number | null; calificacion: string | null }>;
 }
 

@@ -118,7 +118,7 @@ describe("Normalizador de Kardex", () => {
 });
 
 describe("Normalizador de Calificaciones", () => {
-  it("mapea materias y conserva resultadoFinal como null (sin promediar ni tomar el último)", () => {
+  it("mapea materias incompletas y mantiene final pendiente", () => {
     const rawGrades = [
       {
         periodo: {
@@ -152,9 +152,9 @@ describe("Normalizador de Calificaciones", () => {
     expect(mat.nombre_materia).toBe("REDES DE COMPUTADORAS");
     expect(mat.clave_materia).toBe("SCD1021");
 
-    // Regla estricta: resultadoFinal debe ser null
+    // En este caso incompleto no se calcula una final
     expect(mat.resultadoFinal).toBeNull();
-    // No promediar (no 85 ni 56) ni tomar último (no null o 90)
+    // No promediar los parciales disponibles ni tomar la última evaluación
     expect(mat.evaluaciones).toBeDefined();
   });
 });
