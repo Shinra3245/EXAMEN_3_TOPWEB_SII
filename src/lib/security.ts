@@ -95,6 +95,26 @@ export function extractSessionCookie(req: Request): string | null {
 }
 
 /**
+ * Compara dos cadenas en tiempo constante para mitigar ataques de temporización (timing attacks).
+ */
+export function timingSafeEqualString(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") {
+    return false;
+  }
+  const enc = new TextEncoder();
+  const aBuf = enc.encode(a);
+  const bBuf = enc.encode(b);
+  if (aBuf.byteLength !== bBuf.byteLength) {
+    return false;
+  }
+  let diff = 0;
+  for (let i = 0; i < aBuf.byteLength; i++) {
+    diff |= aBuf[i] ^ bBuf[i];
+  }
+  return diff === 0;
+}
+
+/**
  * Agrega cabeceras Cache-Control no-store a respuestas que contienen datos privados
  */
 export function setPrivateCacheHeaders(headers: Headers): void {

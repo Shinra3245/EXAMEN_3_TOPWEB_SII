@@ -56,6 +56,13 @@ export class UpstreamError extends AppError {
   }
 }
 
+export class DatabaseError extends AppError {
+  constructor(message = "Error en la operación con la base de datos") {
+    super(503, "DATABASE_ERROR", message, true);
+    this.name = "DatabaseError";
+  }
+}
+
 export function toSafeErrorResponse(
   error: unknown,
   fallbackMessage = "Error interno del servidor"

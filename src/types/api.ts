@@ -13,4 +13,11 @@ export interface ApiErrorResponse {
   error: ApiErrorDetail;
 }
 
+export interface DatabaseCheckData {
+  connected: boolean;
+  read: boolean;
+  write: boolean;
+  rollback: boolean;
+}
+
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;

@@ -9,6 +9,7 @@ import {
   handleGrades,
   handleKardex,
   handleSchedule,
+  handleDatabaseCheck,
 } from "./handlers";
 
 type HttpMethod = "GET" | "POST";
@@ -27,6 +28,7 @@ export const API_ROUTES: Record<string, RouteDefinition> = {
   "/api/grades": { allowedMethod: "GET", handler: handleGrades },
   "/api/kardex": { allowedMethod: "GET", handler: handleKardex },
   "/api/schedule": { allowedMethod: "GET", handler: handleSchedule },
+  "/api/internal/database-check": { allowedMethod: "POST", handler: handleDatabaseCheck },
 };
 
 /**

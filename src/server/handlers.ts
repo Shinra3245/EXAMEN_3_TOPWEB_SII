@@ -4,7 +4,9 @@ import {
   buildSessionCookieHeader,
   buildClearCookieHeader,
   setPrivateCacheHeaders,
+  timingSafeEqualString,
 } from "@/lib/security";
+import { checkDatabase } from "@/lib/db";
 import { authenticateSii, fetchSiiResource, SII_ENDPOINTS } from "@/lib/sii-client";
 import {
   decodeJwtPayload,
@@ -360,5 +362,172 @@ export async function handleSchedule(req: Request): Promise<Response> {
     );
   } catch (error) {
     return toSafeErrorResponse(error, "Error al consultar horarios");
+  }
+}
+
+/**
+ * POST /api/internal/database-check
+ * Diagnóstico protegido de conexión a Supabase.
+ * - Requiere Authorization: Bearer DATABASE_CHECK_TOKEN
+ * - Requiere DATABASE_CHECK_EXPIRES_AT como Unix timestamp válido, máximo a 30 minutos a futuro.
+ * - Si el token o la expiración son inválidos o ausentes, responde 404 SIN tocar la base de datos ni la red.
+ * - Si falta DATABASE_URL, responde 503 sin tocar la red.
+ * - Ejecuta consultas SQL fijas (SELECT 1 y probe transaccional en pg_temp con ROLLBACK).
+ * - Devuelve únicamente booleans { connected, read, write, rollback } sin exponer URI, hosts ni credenciales.
+ */
+export async function handleDatabaseCheck(req: Request): Promise<Response> {
+  const headers = new Headers();
+  setPrivateCacheHeaders(headers);
+
+  // 1. Método POST únicamente
+  if (req.method !== "POST") {
+    headers.set("Allow", "POST");
+    return Response.json(
+      {
+        success: false,
+        error: {
+          code: "METHOD_NOT_ALLOWED",
+          message: `Método ${req.method} no permitido`,
+        },
+      },
+      {
+        status: 405,
+        headers,
+      }
+    );
+  }
+
+  // 2. Comprobación de Token y Expiración ANTES de tocar la base de datos
+  const configuredToken = getEnvVar("DATABASE_CHECK_TOKEN")?.trim();
+  const rawExpiresAt = getEnvVar("DATABASE_CHECK_EXPIRES_AT");
+
+  const notFoundResponse = () =>
+    Response.json(
+      {
+        success: false,
+        error: {
+          code: "NOT_FOUND",
+          message: "Ruta de API no encontrada",
+        },
+      },
+      {
+        status: 404,
+        headers,
+      }
+    );
+
+  if (!configuredToken || rawExpiresAt === undefined || rawExpiresAt === null || String(rawExpiresAt).trim() === "") {
+    return notFoundResponse();
+  }
+
+  const authHeader =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return notFoundResponse();
+  }
+
+  const providedToken = authHeader.slice(7).trim();
+  if (!providedToken || !timingSafeEqualString(providedToken, configuredToken)) {
+    return notFoundResponse();
+  }
+
+  const expiresAt = Number(String(rawExpiresAt).trim());
+  if (!Number.isSafeInteger(expiresAt) || expiresAt <= 0) {
+    return notFoundResponse();
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (now >= expiresAt) {
+    return notFoundResponse();
+  }
+
+  // Requerido máximo 30 minutos (1800 s) a futuro
+  if (expiresAt > now + 1800) {
+    return notFoundResponse();
+  }
+
+  // 3. Comprobación de configuración DB (503 si falta o es inválida)
+  const dbUrl = getEnvVar("DATABASE_URL")?.trim();
+  if (!dbUrl) {
+    return Response.json(
+      {
+        success: false,
+        error: {
+          code: "SERVER_CONFIGURATION_ERROR",
+          message: "Configuración de base de datos no disponible o incompleta",
+        },
+      },
+      {
+        status: 503,
+        headers,
+      }
+    );
+  }
+
+  // 4. Ejecución del diagnóstico protegido sin exponer credenciales ni datos sensibles
+  try {
+    const result = await checkDatabase();
+    if (!result.rollback || !result.read || !result.write) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DATABASE_CHECK_FAILED",
+            message: "La comprobación de base de datos no completó todas las verificaciones",
+          },
+          data: result,
+        },
+        {
+          status: 503,
+          headers,
+        }
+      );
+    }
+
+    return Response.json(
+      {
+        success: true,
+        data: {
+          connected: result.connected,
+          read: result.read,
+          write: result.write,
+          rollback: result.rollback,
+        },
+      },
+      {
+        status: 200,
+        headers,
+      }
+    );
+  } catch (error) {
+    if (error instanceof AppError) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: error.errorCode,
+            message: error.message,
+          },
+        },
+        {
+          status: error.statusCode,
+          headers,
+        }
+      );
+    }
+
+    return Response.json(
+      {
+        success: false,
+        error: {
+          code: "DATABASE_ERROR",
+          message: "Error durante la comprobación de base de datos",
+        },
+      },
+      {
+        status: 503,
+        headers,
+      }
+    );
   }
 }
