@@ -1,6 +1,6 @@
 # Portal académico SII
 
-Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers mediante OpenNext 1.20.16. Toda comunicación con el SII, incluido el login, ocurre en el servidor. La página raíz es un marcador técnico; todavía no contiene la interfaz de la aplicación.
+Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers mediante OpenNext 1.20.16. Toda comunicación con el SII, incluido el login, ocurre en el servidor. Interfaz funcional neutra con inicio de sesión, dashboard, calificaciones, kardex y horario. El estilo visual final y la funcionalidad adicional se incorporarán por separado.
 
 Piloto técnico: https://examen3-sii.shinra3245.workers.dev
 
@@ -40,6 +40,7 @@ Las respuestas privadas incluyen `Cache-Control: no-store`. Los errores usan `{ 
 | `POST /api/auth/login` | JSON `{email,password}` → `/api/login` y `/api/movil/estudiante`; responde `{success:true,data:{user,expiresAt}}` y cookie privada. |
 | `GET /api/auth/session` | Cookie vigente y perfil institucional válido → `{success:true,data:{authenticated:true,student,expiresAt}}`. |
 | `POST /api/auth/logout` | Borra la cookie del navegador. |
+| `GET /api/student/photo` | Fotografía privada: backend consulta el perfil, limita origen institucional, rechaza redirecciones/SVG, limita respuesta a 2 MiB y no reenvía cabeceras privadas. |
 | `GET /api/student` | `/api/movil/estudiante` → perfil permitido. |
 | `GET /api/grades` | `/api/movil/estudiante/calificaciones` → periodos/materias/evaluaciones permitidas. |
 | `GET /api/kardex` | `/api/movil/estudiante/kardex` → historial por intento. |
@@ -69,11 +70,11 @@ Las pruebas usan fixtures sintéticos y no acreditan por sí solas funcionamient
 
 `wrangler.jsonc` declara únicamente Worker y assets estáticos; no solicita KV, R2, Durable Objects ni optimización de imágenes. La aplicación usa `nodejs_compat`. Las cuotas y el consumo real se deben revisar antes de considerar validado el uso en Free: [límites oficiales de Workers](https://developers.cloudflare.com/workers/platform/limits/).
 
-GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El despliegue automático está preparado pero deshabilitado hasta configurar `CLOUDFLARE_API_TOKEN` como secreto limitado a la cuenta/Worker y `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_WORKER_URL` como variables, y habilitar `CLOUDFLARE_DEPLOY_ENABLED=true`. `SESSION_SECRET` se configura en el Worker y nunca se incorpora al bundle. Se puede seguir desplegando con la sesión local de Wrangler mientras se completa esa conexión: [configuración oficial de GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El despliegue automático se encuentra habilitado mediante `CLOUDFLARE_API_TOKEN` como secreto limitado a la cuenta/Worker y `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_WORKER_URL` como variables, con `CLOUDFLARE_DEPLOY_ENABLED=true`. `SESSION_SECRET` se configura en el Worker y nunca se incorpora al bundle. También se admite despliegue manual con Wrangler autenticado: [configuración oficial de GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
 
 ## PostgreSQL de servidor
 
-`src/lib/db.ts` usa pg y TLS con verificación de certificado, un cliente por operación y cierre en finally. `DATABASE_URL` es secreto exclusivo del Worker: poolerSupabase en6543, usuario del proyecto; sin prepared statements nombrados. No hay ORM ni tablas del adicional. Usar `withDatabase` para operaciones parametrizadas del módulo de datos.
+`src/lib/db.ts` usa pg y TLS con verificación de certificado, un cliente por operación y cierre en finally. En producción la conexión utiliza exclusivamente Hyperdrive y el rol restringido del proyecto. `DATABASE_URL` es una alternativa privada para Node; no se usa en el Worker publicado. No usar prepared statements nombrados. No hay ORM ni tablas del adicional. Usar `withDatabase` para operaciones parametrizadas del módulo de datos.
 
 POST /api/internal/database-check es diagnóstico de mantenimiento: requiere Bearer DATABASE_CHECK_TOKEN privado y DATABASE_CHECK_EXPIRES_AT Unix vigente, máximo30min. Deshabilitado devuelve404; sin configuraciónDB503. Ejecuta lectura y escritura temporal con rollback, devuelve solo booleans. No acredita persistencia ni reglas del adicional. Retirar token después del ensayo. Nunca configurar credenciales por Git o logs ni consultar esta ruta desde la UI.
 
@@ -92,3 +93,13 @@ La conexión publicada de Hyperdrive usa `examen_app_runtime`, sin superusuario,
 Las migraciones0002/0003 crean y retiran una tabla exclusivamente técnica para validar commit/reconexión, aislamientoA/B, rechazo de escrituras ajenas y rollback con datos sintéticos. No es el modelo del adicional. El diagnóstico POST /api/internal/data-verification está deshabilitado sin DATA_VERIFY_TOKEN y DATA_VERIFY_EXPIRES_AT vigentes (máximo30min); solo acepta fases/UUID y SQL fijo, sin actores o consultas arbitrarias. Retirar secretos después de verificar.
 
 Recuperación: la ejecución fallida revierte la transacción; conservar ledger/checksums y revisar antes de reintentar. Para futuros cambios de negocio, preparar una migración correctiva y respaldo/recuperación según el impacto; no usar resets o CASCADE sobre entrega.
+
+## Interfaz académica y validación pública
+
+Rutas `/login`, `/dashboard`, `/calificaciones`, `/kardex` y `/horario`. El navegador consulta únicamente `/api/*` del propio sitio; nunca contacta al SII, incluida la fotografía. La sesión viaja en cookie HttpOnly; los datos académicos se mantienen en memoria y se eliminan al cerrar o invalidar la sesión. No se guardan contraseñas, tokens ni respuestas académicas en localStorage/sessionStorage.
+
+Calificaciones permite búsqueda y filtro de periodo; muestra los cuatro parciales, final calculada o pendiente y procedencia. Semáforo de aplicación: verde90–100, amarillo70–89, rojo<70, pendiente neutral; no es normativa institucional. Kardex conserva intentos, valores oficiales y orden original, con búsqueda/filtro/orden explícito. Horario es una lista por día y hora con filtros y franjas no interpretadas visibles. Dashboard presenta únicamente indicadores oficiales disponibles.
+
+Para este piloto, los recorridos de aplicación se ejecutan en la URL pública; no se necesita iniciar `dev`, `start` ni `preview`. Lint, tipos, pruebas sintéticas y build se mantienen antes de publicar. `APP_BASE_URL=https://su-worker.workers.dev npm run test:browser:production` valida acceso público con Chrome instalado. El script rechaza localhost/HTTP y no inicia servidores. La opción explícita `-- --keyring-sii` permite al propietario una prueba autorizada usando credenciales ya provisionadas en Secret Service; no solicita ni registra contraseñas, cookies, cuerpos, trazas, capturas o archivos de sesión. No se ejecuta el recorrido autenticado en CI ni se delegan credenciales. Una interrupción aislada de petición en el navegador prueba el reintento; los datos mostrados después proceden del SII real.
+
+Las pruebas unitarias usan fixtures sintéticos aislados; no sustituyen evidencia de navegación real. Capturas de entrega y estilo final pendientes.

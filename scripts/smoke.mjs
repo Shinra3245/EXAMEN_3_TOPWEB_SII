@@ -5,7 +5,7 @@ const results = [];
 const cases = [
   ["home", "/", "GET", undefined, {}, 200],
   ["health", "/api/health", "GET", undefined, {}, 200],
-  ...["/api/auth/session", "/api/student", "/api/grades", "/api/kardex", "/api/schedule"]
+  ...["/api/auth/session", "/api/student", "/api/student/photo", "/api/grades", "/api/kardex", "/api/schedule"]
     .map(path => ["no-session", path, "GET", undefined, {}, 401]),
   ["tampered-cookie", "/api/student", "GET", undefined, { Cookie: "sii_session=ficticia" }, 401],
   ["empty-login", "/api/auth/login", "POST", "{}", { Origin: origin }, 400],
