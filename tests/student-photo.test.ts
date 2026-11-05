@@ -110,16 +110,14 @@ describe("private photo proxy", () => {
     );
   });
   it("serves only allowed bytes privately without upstream headers", async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(new Uint8Array([1, 2, 3]), {
-          headers: {
-            "Content-Type": "image/png",
-            "Set-Cookie": "upstream-private",
-          },
-        }),
-      );
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array([1, 2, 3]), {
+        headers: {
+          "Content-Type": "image/png",
+          "Set-Cookie": "upstream-private",
+        },
+      }),
+    );
     vi.stubGlobal("fetch", fetch);
     const result = await handleStudentPhoto(request());
     expect(result.status).toBe(200);
@@ -130,4 +128,30 @@ describe("private photo proxy", () => {
     );
     expect(fetch.mock.calls[0][1].redirect).toBe("manual");
   });
+});
+
+it("decodes observed line-wrapped JPEG base64 without treating it as a URL", async () => {
+  const bytes = Buffer.from([255, 216, 255, 224, 0, 16]);
+  const encoded = bytes.toString("base64");
+  vi.mocked(fetchSiiResource).mockResolvedValue({
+    numero_control: "TEST",
+    foto: encoded.slice(0, 4) + "\r\n " + encoded.slice(4),
+  });
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  const response = await handleStudentPhoto(request());
+  expect(response.status).toBe(200);
+  expect(response.headers.get("content-type")).toBe("image/jpeg");
+  expect(Buffer.from(await response.arrayBuffer())).toEqual(bytes);
+  expect(fetch).not.toHaveBeenCalled();
+});
+it("rejects malformed raw JPEG base64 without fetching it as a URL", async () => {
+  vi.mocked(fetchSiiResource).mockResolvedValue({
+    numero_control: "TEST",
+    foto: "/9j/INVALID$",
+  });
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  expect((await handleStudentPhoto(request())).status).toBe(404);
+  expect(fetch).not.toHaveBeenCalled();
 });

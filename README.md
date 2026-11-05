@@ -40,7 +40,7 @@ Las respuestas privadas incluyen `Cache-Control: no-store`. Los errores usan `{ 
 | `POST /api/auth/login` | JSON `{email,password}` → `/api/login` y `/api/movil/estudiante`; responde `{success:true,data:{user,expiresAt}}` y cookie privada. |
 | `GET /api/auth/session` | Cookie vigente y perfil institucional válido → `{success:true,data:{authenticated:true,student,expiresAt}}`. |
 | `POST /api/auth/logout` | Borra la cookie del navegador. |
-| `GET /api/student/photo` | Fotografía privada: backend consulta el perfil, limita origen institucional, rechaza redirecciones/SVG, limita respuesta a 2 MiB y no reenvía cabeceras privadas. |
+| `GET /api/student/photo` | Fotografía privada: backend consulta el perfil, decodifica JPEG base64 con saltos de línea o limita origen institucional para imágenes por URL, rechaza redirecciones/SVG, limita respuesta a 2 MiB y no reenvía cabeceras privadas. |
 | `GET /api/student` | `/api/movil/estudiante` → perfil permitido. |
 | `GET /api/grades` | `/api/movil/estudiante/calificaciones` → periodos/materias/evaluaciones permitidas. |
 | `GET /api/kardex` | `/api/movil/estudiante/kardex` → historial por intento. |

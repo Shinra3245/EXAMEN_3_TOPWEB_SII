@@ -68,7 +68,11 @@ export default function KardexPage() {
           </label>
           <label>
             Periodo
-            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <select
+              aria-label="Periodo"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
               <option value="">Todos los periodos</option>
               {[...new Set(all.map((r) => r.periodo))]
                 .filter(Boolean)
@@ -79,7 +83,11 @@ export default function KardexPage() {
           </label>
           <label>
             Orden
-            <select value={order} onChange={(e) => setOrder(e.target.value)}>
+            <select
+              aria-label="Orden"
+              value={order}
+              onChange={(e) => setOrder(e.target.value)}
+            >
               <option value="original">Orden recibido del SII</option>
               <option value="subject">Materia (A–Z)</option>
               <option value="period">Periodo ascendente</option>

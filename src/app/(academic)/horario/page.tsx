@@ -61,7 +61,11 @@ export default function SchedulePage() {
         <div className="controls">
           <label>
             Periodo
-            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <select
+              aria-label="Periodo"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
               <option value="">Todos los periodos</option>
               {resource.data?.map((g, i) => (
                 <option key={i} value={i}>
@@ -72,7 +76,11 @@ export default function SchedulePage() {
           </label>
           <label>
             Día
-            <select value={day} onChange={(e) => setDay(e.target.value)}>
+            <select
+              aria-label="Día"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+            >
               <option value="">Todos los días</option>
               {days.map((d) => (
                 <option key={d} value={d}>
