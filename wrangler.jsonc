@@ -16,5 +16,11 @@
   "workers_dev": true,
   "observability": {
     "enabled": false
-  }
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "d6e22ef3afe34911b20c8789c56a04fb"
+    }
+  ]
 }

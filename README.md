@@ -64,3 +64,11 @@ Las pruebas automatizadas usan datos sintéticos y no acreditan el flujo autenti
 `wrangler.jsonc` declara únicamente Worker y assets estáticos; no solicita KV, R2, Durable Objects ni optimización de imágenes. La aplicación usa `nodejs_compat`. Las cuotas y el consumo real se deben revisar antes de considerar validado el uso en Free: [límites oficiales de Workers](https://developers.cloudflare.com/workers/platform/limits/).
 
 GitHub Actions ejecuta las comprobaciones y el build adaptado en PR y main. El despliegue automático está preparado pero deshabilitado hasta configurar `CLOUDFLARE_API_TOKEN` como secreto limitado a la cuenta/Worker y `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_WORKER_URL` como variables, y habilitar `CLOUDFLARE_DEPLOY_ENABLED=true`. `SESSION_SECRET` se configura en el Worker y nunca se incorpora al bundle. Se puede seguir desplegando con la sesión local de Wrangler mientras se completa esa conexión: [configuración oficial de GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+
+## PostgreSQL de servidor
+
+`src/lib/db.ts` usa pg y TLS con verificación de certificado, un cliente por operación y cierre en finally. `DATABASE_URL` es secreto exclusivo del Worker: poolerSupabase en6543, usuario del proyecto; sin prepared statements nombrados. No hay ORM ni tablas del adicional. Usar `withDatabase` para operaciones parametrizadas del módulo de datos.
+
+POST /api/internal/database-check es diagnóstico de mantenimiento: requiere Bearer DATABASE_CHECK_TOKEN privado y DATABASE_CHECK_EXPIRES_AT Unix vigente, máximo30min. Deshabilitado devuelve404; sin configuraciónDB503. Ejecuta lectura y escritura temporal con rollback, devuelve solo booleans. No acredita persistencia ni reglas del adicional. Retirar token después del ensayo. Nunca configurar credenciales por Git o logs ni consultar esta ruta desde la UI.
+
+En Workers se utiliza el binding `HYPERDRIVE` del proyecto del examen. Hyperdrive verifica TLS con el origen Supabase (`verify-full`, CA pública de Supabase), caché desactivada y límite de5conexiones. La conexión interna administrada se obtiene del binding; no se aplica el validador de URI externa a ese transporte. DATABASE_URL queda como alternativa para desarrollo local Node. No registrar connectionString del binding.
