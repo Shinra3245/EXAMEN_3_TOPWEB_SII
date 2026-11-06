@@ -1,0 +1,346 @@
+.loginPage {
+  --login-bg: #edf8fd;
+  --login-surface: #ffffff;
+  --login-ink: #1b3044;
+  --login-muted: #5c7488;
+  --login-blue: #238dcc;
+  --login-yellow: #ffda63;
+  --login-border: #c7dfea;
+
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--login-bg);
+  color: var(--login-ink);
+  font-family: var(--font-pixel-body), "Courier New", monospace;
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+  height: clamp(190px, 27vh, 270px);
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #73b8ed, #dff5ff);
+}
+
+.bannerImage {
+  object-fit: cover;
+  object-position: center 47%;
+}
+
+.bannerFade {
+  position: absolute;
+  inset: 42% 0 0;
+  background: linear-gradient(180deg, transparent, var(--login-bg));
+}
+
+.loginLayout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(190px, 285px);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(32px, 7vw, 96px);
+  width: min(100% - 40px, 920px);
+  margin: -22px auto 0;
+  padding-bottom: 40px;
+}
+
+.loginCard {
+  min-width: 0;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid var(--login-border);
+  border-radius: 18px;
+  background: var(--login-surface);
+  box-shadow: 0 12px 36px rgb(32 83 115 / 12%);
+}
+
+.loginHeader {
+  margin-bottom: 26px;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: #9b6800;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+}
+
+.loginHeader h1 {
+  margin: 0;
+  font-family: var(--font-pixel-display), monospace;
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.loginHeader > p:last-child {
+  margin: 10px 0 0;
+  color: var(--login-muted);
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.form {
+  margin: 0;
+}
+
+.fieldset {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field label {
+  color: #936000;
+  font-size: 18px;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 9px 14px;
+  border: 2px solid var(--login-border);
+  border-radius: 12px;
+  outline: none;
+  background: #fff;
+  color: var(--login-ink);
+  font: inherit;
+  font-size: 21px;
+}
+
+.field input::placeholder {
+  color: #70889b;
+  opacity: 1;
+}
+
+.field input:focus-visible,
+.showPasswordButton:focus-visible,
+.secondaryButton:focus-visible,
+.submitButton:focus-visible {
+  outline: 3px solid var(--login-blue);
+  outline-offset: 3px;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
+.passwordField {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.passwordField input {
+  flex: 1 1 auto;
+}
+
+.showPasswordButton,
+.secondaryButton {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #96bed2;
+  border-radius: 10px;
+  background: #f2faff;
+  color: #174b6b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+}
+
+.showPasswordButton:hover,
+.secondaryButton:hover {
+  background: #e2f4ff;
+}
+
+.fieldError {
+  margin: 0;
+  color: #a61b1b;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.submitButton {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 6px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--login-yellow);
+  color: #26394b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #f4c947;
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  background: #dbe7ed;
+  color: #647b8e;
+  cursor: not-allowed;
+}
+
+.securityNote {
+  margin: 18px 0 0;
+  color: var(--login-muted);
+  font-size: 16px;
+  text-align: center;
+}
+
+.notice,
+.error {
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  border-radius: 10px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.notice {
+  border: 1px solid #9ecce3;
+  background: #eef9ff;
+  color: #174b6b;
+}
+
+.notice progress {
+  margin-right: 6px;
+  accent-color: var(--login-blue);
+}
+
+.error {
+  border: 1px solid #e6a7a0;
+  background: #fff2f0;
+  color: #8f1e16;
+}
+
+.error p {
+  margin: 0 0 10px;
+}
+
+.error p:last-child {
+  margin-bottom: 0;
+}
+
+.mascot {
+  width: 100%;
+  max-width: 285px;
+  margin: 0;
+  text-align: center;
+}
+
+.mascotSprite {
+  width: 100%;
+  aspect-ratio: 27 / 37;
+  background-image: url("/assets/juanito-writing-sprite.png");
+  background-repeat: no-repeat;
+  background-size: 800% 100%;
+  animation: writeFrames 1.12s steps(1, end) infinite;
+  image-rendering: pixelated;
+}
+
+.mascot figcaption {
+  margin-top: 4px;
+  color: var(--login-muted);
+  font-size: 17px;
+}
+
+@keyframes writeFrames {
+  0% { background-position: 0% 0; }
+  12.5% { background-position: 14.286% 0; }
+  25% { background-position: 28.571% 0; }
+  37.5% { background-position: 42.857% 0; }
+  50% { background-position: 57.143% 0; }
+  62.5% { background-position: 71.429% 0; }
+  75% { background-position: 85.714% 0; }
+  87.5%, 100% { background-position: 100% 0; }
+}
+
+@media (max-width: 640px) {
+  .banner {
+    height: 170px;
+  }
+
+  .loginLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    width: min(100% - 28px, 430px);
+    margin-top: -12px;
+    padding-bottom: 28px;
+  }
+
+  .loginCard {
+    padding: 24px 20px;
+  }
+
+  .loginHeader {
+    margin-bottom: 20px;
+  }
+
+  .mascot {
+    width: min(35vw, 155px);
+    justify-self: center;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 641px) {
+  .banner {
+    height: clamp(150px, 23vh, 210px);
+  }
+
+  .loginLayout {
+    gap: 28px;
+    padding-bottom: 18px;
+  }
+
+  .loginCard {
+    padding: 22px 28px;
+  }
+
+  .loginHeader {
+    margin-bottom: 17px;
+  }
+
+  .fieldset {
+    gap: 12px;
+  }
+
+  .field input {
+    min-height: 46px;
+  }
+
+  .mascot {
+    max-width: 210px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submitButton,
+  .mascotSprite {
+    transition: none;
+    animation: none;
+  }
+
+  .mascotSprite {
+    background-position: 0 0;
+  }
+}
