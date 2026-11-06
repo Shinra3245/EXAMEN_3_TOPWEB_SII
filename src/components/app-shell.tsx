@@ -68,11 +68,15 @@ export function AppShell({ children }: AppShellProps) {
   // 1. Estado Loading: no renderizar hijos privados
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
+      <div className="app-shell min-h-screen bg-white text-gray-900">
+        <header className="app-header border-b border-gray-200 p-4">
           <h1 className="text-xl font-bold">Portal académico</h1>
         </header>
-        <main className="controls p-8" aria-busy="true" aria-live="polite">
+        <main
+          className="app-content controls p-8"
+          aria-busy="true"
+          aria-live="polite"
+        >
           <p>Cargando información del portal...</p>
         </main>
       </div>
@@ -82,11 +86,11 @@ export function AppShell({ children }: AppShellProps) {
   // 2. Estado Error: no renderizar hijos privados, permitir reintento
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
+      <div className="app-shell min-h-screen bg-white text-gray-900">
+        <header className="app-header border-b border-gray-200 p-4">
           <h1 className="text-xl font-bold">Portal académico</h1>
         </header>
-        <main className="controls p-8" role="alert">
+        <main className="app-content controls p-8" role="alert">
           <div className="error">
             <p>{message || "Error al verificar la sesión académica."}</p>
             <button type="button" onClick={() => refresh()} className="mt-2">
@@ -101,11 +105,11 @@ export function AppShell({ children }: AppShellProps) {
   // 3. Estado Unauthenticated: no renderizar hijos privados
   if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
+      <div className="app-shell min-h-screen bg-white text-gray-900">
+        <header className="app-header border-b border-gray-200 p-4">
           <h1 className="text-xl font-bold">Portal académico</h1>
         </header>
-        <main className="controls p-8" aria-live="polite">
+        <main className="app-content controls p-8" aria-live="polite">
           <p>Redirigiendo al inicio de sesión...</p>
         </main>
       </div>
@@ -114,18 +118,20 @@ export function AppShell({ children }: AppShellProps) {
 
   // 4. Estado Authenticated: renderizar AppShell con navegación y children
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="app-shell min-h-screen bg-white text-gray-900">
       <a href="#main-content" className="sr-only">
         Saltar al contenido principal
       </a>
 
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+      <header className="app-header border-b border-gray-200 bg-white">
+        <div className="app-header-inner mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xl font-bold">Portal académico</span>
+            <div className="app-brand">
+              <span className="app-brand-title text-xl font-bold">
+                Portal académico
+              </span>
               {student && (
-                <div className="text-sm text-gray-600">
+                <div className="app-user-meta text-sm text-gray-600">
                   <span>{student.persona || student.numero_control}</span>
                   {student.numero_control && (
                     <span className="ml-2">({student.numero_control})</span>
@@ -135,13 +141,14 @@ export function AppShell({ children }: AppShellProps) {
             </div>
 
             {/* Botón de menú móvil */}
-            <div className="sm:hidden">
+            <div className="app-menu-toggle sm:hidden">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="academic-nav-menu"
                 aria-label="Alternar menú de navegación"
+                className="app-menu-button"
               >
                 {mobileMenuOpen ? "Cerrar menú" : "Menú"}
               </button>
@@ -149,7 +156,7 @@ export function AppShell({ children }: AppShellProps) {
 
             {/* Navegación en escritorio */}
             <nav
-              className="hidden sm:flex sm:items-center sm:gap-4"
+              className="app-nav hidden sm:flex sm:items-center sm:gap-4"
               aria-label="Navegación principal"
             >
               {navLinks.map((link) => {
@@ -159,11 +166,7 @@ export function AppShell({ children }: AppShellProps) {
                     key={link.href}
                     href={link.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={
-                      isActive
-                        ? "font-semibold underline"
-                        : "text-gray-700 hover:underline"
-                    }
+                    className={`app-nav-link${isActive ? " is-active" : ""}`}
                   >
                     {link.label}
                   </Link>
@@ -174,6 +177,7 @@ export function AppShell({ children }: AppShellProps) {
                 onClick={handleLogout}
                 disabled={isLoggingOut}
                 aria-label="Cerrar sesión"
+                className="app-logout-button"
               >
                 {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
               </button>
@@ -184,7 +188,7 @@ export function AppShell({ children }: AppShellProps) {
           {mobileMenuOpen && (
             <nav
               id="academic-nav-menu"
-              className="mt-3 border-t border-gray-200 pt-3 sm:hidden"
+              className="app-mobile-nav mt-3 border-t border-gray-200 pt-3 sm:hidden"
               aria-label="Navegación móvil"
             >
               <ul className="flex flex-col gap-2 list-none p-0 m-0">
@@ -195,11 +199,7 @@ export function AppShell({ children }: AppShellProps) {
                       <Link
                         href={link.href}
                         aria-current={isActive ? "page" : undefined}
-                        className={
-                          isActive
-                            ? "block font-semibold underline py-1"
-                            : "block text-gray-700 hover:underline py-1"
-                        }
+                        className={`app-nav-link${isActive ? " is-active" : ""}`}
                       >
                         {link.label}
                       </Link>
@@ -211,7 +211,7 @@ export function AppShell({ children }: AppShellProps) {
                     type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="w-full text-left"
+                    className="app-logout-button w-full text-left"
                   >
                     {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
                   </button>
@@ -226,7 +226,7 @@ export function AppShell({ children }: AppShellProps) {
         <aside
           role="alert"
           aria-live="assertive"
-          className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8"
+          className="app-logout-alert mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8"
         >
           <div className="error">
             <p>{logoutError}</p>
@@ -245,7 +245,7 @@ export function AppShell({ children }: AppShellProps) {
       <main
         key={student?.numero_control ?? "anonymous"}
         id="main-content"
-        className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"
+        className="app-content mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"
       >
         {children}
       </main>

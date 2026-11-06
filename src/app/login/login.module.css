@@ -1,11 +1,11 @@
 .loginPage {
-  --login-bg: #edf8fd;
-  --login-surface: #ffffff;
-  --login-ink: #1b3044;
-  --login-muted: #5c7488;
-  --login-blue: #238dcc;
-  --login-yellow: #ffda63;
-  --login-border: #c7dfea;
+  --login-bg: var(--pixel-cloud);
+  --login-surface: var(--pixel-surface);
+  --login-ink: var(--pixel-ink);
+  --login-muted: var(--pixel-muted);
+  --login-blue: var(--pixel-blue);
+  --login-yellow: var(--pixel-yellow);
+  --login-border: var(--pixel-border);
 
   min-height: 100svh;
   overflow: hidden;
@@ -122,7 +122,7 @@
 }
 
 .field input::placeholder {
-  color: #70889b;
+  color: #536f84;
   opacity: 1;
 }
 
@@ -196,7 +196,7 @@
 
 .submitButton:disabled {
   background: #dbe7ed;
-  color: #647b8e;
+  color: #40596b;
   cursor: not-allowed;
 }
 
@@ -277,28 +277,68 @@
 
 @media (max-width: 640px) {
   .banner {
-    height: 170px;
+    height: 128px;
   }
 
   .loginLayout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+    gap: 10px;
     width: min(100% - 28px, 430px);
-    margin-top: -12px;
-    padding-bottom: 28px;
+    margin-top: -10px;
+    padding-bottom: 8px;
   }
 
   .loginCard {
-    padding: 24px 20px;
+    padding: 17px 16px;
   }
 
   .loginHeader {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+  }
+
+  .eyebrow {
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .loginHeader > p:last-child {
+    margin-top: 6px;
+    font-size: 18px;
+  }
+
+  .fieldset {
+    gap: 11px;
+  }
+
+  .field input {
+    min-height: 46px;
+    font-size: 19px;
+  }
+
+  .submitButton {
+    min-height: 46px;
+    margin-top: 2px;
+  }
+
+  .securityNote {
+    margin-top: 9px;
+    font-size: 15px;
   }
 
   .mascot {
-    width: min(35vw, 155px);
+    width: min(28vw, 118px);
     justify-self: center;
+  }
+
+  .mascot figcaption {
+    margin-top: 1px;
+    font-size: 15px;
+  }
+
+  .notice,
+  .error {
+    padding: 8px 10px;
+    margin-bottom: 10px;
   }
 }
 

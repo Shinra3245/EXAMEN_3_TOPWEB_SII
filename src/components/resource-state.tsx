@@ -13,14 +13,18 @@ export function ResourceState({
 }) {
   if (loading)
     return (
-      <p role="status" aria-live="polite">
+      <p
+        className="resource-state resource-state-loading"
+        role="status"
+        aria-live="polite"
+      >
         <progress aria-label="Consulta en curso" /> Consultando información del
         SII…
       </p>
     );
   if (error)
     return (
-      <div role="alert">
+      <div className="resource-state resource-state-error" role="alert">
         <p>{error}</p>
         <button type="button" onClick={retry}>
           Reintentar consulta

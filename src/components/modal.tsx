@@ -34,7 +34,7 @@ export function Modal({
     <dialog
       ref={ref}
       aria-labelledby={titleId}
-      className="m-auto w-full max-w-xl border-0 bg-transparent p-4 backdrop:bg-black/50"
+      className="app-modal m-auto w-full max-w-xl border-0 bg-transparent p-4 backdrop:bg-black/50"
       onKeyDown={(event) => {
         if (event.key !== "Tab") return;
         const controls = Array.from(
