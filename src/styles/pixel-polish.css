@@ -669,3 +669,55 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.
     scrollbar-width: thin;
   }
 }
+
+/* ==========================================================================
+   Enlaces con forma de botón (a.btn-primary / a.btn-secondary)
+   ========================================================================== */
+[data-visual-shell][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary),
+dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.55rem 1.25rem;
+  border: 3px solid var(--surface-border);
+  border-radius: 0;
+  background: var(--brand-primary);
+  color: var(--brand-contrast);
+  box-shadow: 4px 4px 0 var(--surface-border);
+  font-family: var(--font-family-base);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] a.btn-primary::after,
+dialog[data-visual-modal][data-visual-style="pixelretro"] a.btn-primary::after {
+  content: "→";
+  font-size: 1.2em;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary):is(:hover, :focus-visible),
+dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary):is(:hover, :focus-visible) {
+  background: var(--brand-primary-hover, var(--brand-primary));
+  color: var(--brand-contrast);
+  text-decoration: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--surface-border);
+  filter: brightness(0.92);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] a.btn-primary:hover::after,
+dialog[data-visual-modal][data-visual-style="pixelretro"] a.btn-primary:hover::after {
+  transform: translateX(4px);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary):active,
+dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary):active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--surface-border);
+}
