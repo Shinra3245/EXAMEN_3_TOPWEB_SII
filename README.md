@@ -34,6 +34,40 @@ Piloto técnico: https://examen3-sii.shinra3245.workers.dev
 
 El navegador solo habla con el Worker. El token del SII nunca llega al navegador: vive cifrado dentro de la cookie `sii_session`. Los datos académicos se consultan al SII en cada visita y no se almacenan; la base solo guarda los reportes de aulas y los contadores de intentos de login.
 
+### Compilación y despliegue
+
+Todo el código se escribe en TypeScript y se compila a JavaScript, que es lo único que ejecuta Cloudflare.
+
+```
+ TypeScript + React (.tsx)            TypeScript del backend (.ts)
+ src/app, src/components              src/worker.ts, src/server, src/lib
+          │                                       │
+          ▼                                       │
+ npm run build:cloudflare                         │
+ ┌──────────────────────────┐                     │
+ │ next build (Next.js)     │ compila las         │
+ │          +               │ pantallas a JS/CSS  │
+ │ OpenNext                 │ y las adapta a      │
+ │ (@opennextjs/cloudflare) │ Cloudflare          │
+ └────────────┬─────────────┘                     │
+              ▼                                   │
+        carpeta .open-next/                       │
+        (worker.js + assets)                      │
+              │                                   │
+              └─────────────────┬─────────────────┘
+                                ▼
+                       npm run deploy
+                 ┌──────────────────────┐
+                 │ Wrangler             │ compila worker.ts, lo une
+                 │ (wrangler.jsonc)     │ con .open-next/ y lo sube
+                 └──────────┬───────────┘
+                            ▼
+                 Cloudflare Worker en producción
+                 (runtime V8: ejecuta solo JavaScript)
+```
+
+Next.js con OpenNext compila las pantallas y Wrangler compila el backend y publica el conjunto. En producción lo dispara GitHub Actions: al hacer merge a `main`, el workflow de validación (lint, tipos y pruebas) debe pasar y entonces el de publicación ejecuta `build:cloudflare` y `deploy`.
+
 ## Desarrollo
 
 Se requiere Node.js 24 (CI usa 24.16.0). Instalar el lockfile con `npm ci`. Copiar `.env.example` a `.env.local` y configurar una clave `SESSION_SECRET` aleatoria de 32 bytes (64 caracteres hexadecimales). No utilizar claves de ejemplo ni reutilizar claves entre entornos. Para la vista previa de Wrangler, proporcionar las mismas variables de desarrollo mediante `.dev.vars`, siempre fuera de Git.
