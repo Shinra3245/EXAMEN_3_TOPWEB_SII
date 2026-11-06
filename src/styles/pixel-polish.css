@@ -671,6 +671,7 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.
 }
 
 /* ==========================================================================
+<<<<<<< Updated upstream
    Enlaces con forma de botón (a.btn-primary / a.btn-secondary)
    ========================================================================== */
 [data-visual-shell][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary),
@@ -721,3 +722,48 @@ dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .bt
   transform: translate(3px, 3px);
   box-shadow: 0 0 0 var(--surface-border);
 }
+=======
+   Lista desplegable de respaldo (PixelSelectEnhancer) para navegadores sin base-select
+   ========================================================================== */
+.pixel-listbox {
+  position: fixed;
+  inset: auto;
+  z-index: 2147483000;
+  color: var(--text-main);
+  box-sizing: border-box;
+  max-height: 26rem;
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  list-style: none;
+  border: 3px solid var(--surface-border);
+  background: var(--surface-bg);
+  box-shadow: 5px 5px 0 var(--surface-border);
+  scrollbar-color: var(--brand-primary) transparent;
+  scrollbar-width: thin;
+  animation: vs-modal-in var(--dur-fast) var(--ease-out) both;
+}
+.pixel-listbox li {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+  padding: 0.5rem 0.85rem;
+  border: 2px solid transparent;
+  color: var(--text-main);
+  font-family: var(--font-family-base);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pixel-listbox li[aria-selected="true"]::after {
+  content: "■";
+  margin-left: auto;
+  padding-left: 0.75rem;
+  font-size: 0.7rem;
+}
+.pixel-listbox li.is-active { border-color: var(--brand-primary); background: #e6defa; color: #2a0b53; }
+[data-visual-theme="oscuro"] .pixel-listbox li.is-active { background: #3a2a78; color: #ffffff; border-color: #a07cff; }
+.pixel-listbox li[aria-selected="true"] { background: var(--brand-primary); color: var(--brand-contrast); border-color: var(--surface-border); }
+.pixel-listbox li[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .pixel-listbox { animation: none; } }
+>>>>>>> Stashed changes
