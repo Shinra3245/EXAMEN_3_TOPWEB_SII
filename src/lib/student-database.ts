@@ -9,7 +9,7 @@ export interface ActorTransactionOptions {
   isAdmin?: boolean;
 }
 
-/** Identidad exclusivamente de la cookie cifrada; nunca de URL/cuerpo/cabeceras del usuario. */
+/** La identidad del estudiante proviene solo de la cookie cifrada. */
 export async function withStudentDatabase<T>(
   req: Request,
   callback: (client: Client) => Promise<T>,
@@ -20,14 +20,18 @@ export async function withStudentDatabase<T>(
   return withActorTransaction(session.numero_control, callback, { isAdmin });
 }
 
-/** Uso interno de servidor/diagnóstico sintético. No exponer actor ni SQL como entrada HTTP. */
+/** Uso interno del servidor; el actor y las consultas no se reciben por HTTP. */
 export async function withActorTransaction<T>(
   actor: string,
   callback: (client: Client) => Promise<T>,
   options?: ActorTransactionOptions | boolean
 ): Promise<T> {
-  if (!actor || actor.length > 64)
-    throw new AuthenticationError("INVALID_DATA_ACTOR", "Identidad de datos inválida");
+  if (!actor || actor.length > 64) {
+    throw new AuthenticationError(
+      "INVALID_DATA_ACTOR",
+      "Identidad de datos inválida",
+    );
+  }
 
   const isAdmin =
     typeof options === "boolean" ? options : Boolean(options?.isAdmin);
@@ -46,7 +50,7 @@ export async function withActorTransaction<T>(
       try {
         await client.query("ROLLBACK");
       } catch {
-        /* preservar error original; finally de withDatabase cierra conexión */
+        // Se conserva el error original; withDatabase cierra la conexión.
       }
       throw error;
     }

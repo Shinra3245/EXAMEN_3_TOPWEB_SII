@@ -74,6 +74,8 @@ export async function handleLogin(req: Request): Promise<Response> {
       );
     }
 
+    // Límites de longitud: email según RFC 5321, password acotada para evitar
+    // payloads abusivos hacia el SII.
     const { email, password } = body;
     if (
       typeof email !== "string" ||
@@ -127,6 +129,8 @@ export async function handleLogin(req: Request): Promise<Response> {
       isHttps
     );
 
+    // ~3800 bytes es el límite práctico de cabeceras en navegadores;
+    // si la cookie cifrada excede, se rechaza la sesión en lugar de truncarla.
     if (cookieHeader.length > 3800) {
       throw new AppError(
         502,

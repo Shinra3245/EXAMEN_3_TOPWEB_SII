@@ -7,6 +7,8 @@ export interface SiiEnvelope<T = unknown> {
   data: T;
 }
 
+// El login puede responder solo con code/flag si falla; se permiten claves
+// adicionales porque la estructura del upstream no es completamente estable.
 export interface SiiLoginResponse {
   message?: {
     login?: {
@@ -21,6 +23,8 @@ export interface SiiLoginResponse {
   [key: string]: unknown;
 }
 
+// El SII alterna semestre entre número y texto. Las claves extra permiten
+// tolerar campos nuevos que los normalizadores no consumen.
 export interface SiiRawStudent {
   numero_control?: string;
   email?: string;
@@ -45,6 +49,8 @@ export interface SiiRawKardexResponse {
   [key: string]: unknown;
 }
 
+// El normalizador valida periodo en tiempo de ejecución. El upstream escribe
+// `calificaiones`; ese campo se lee sin tiparlo aquí para evitar acoplar el DTO.
 export interface SiiRawGradeEntry {
   periodo?: Record<string, unknown>;
   materias?: Array<{

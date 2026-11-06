@@ -3,6 +3,7 @@ import {
   DEFAULT_VISUAL_STATE,
   appendVisualParams,
   parseVisualQuery,
+  setVisualTheme,
   syncVisualState,
 } from "../src/components/visual-theme";
 
@@ -82,5 +83,33 @@ describe("visual preferences and url synchronization", () => {
     expect(linkWithExistingQuery).toContain("filter=mine");
     expect(linkWithExistingQuery).toContain("visual=mosaico");
     expect(linkWithExistingQuery).toContain("tema=oscuro");
+  });
+
+  it("alternates theme from the UI and persists it over the next sync", () => {
+    syncVisualState();
+    setVisualTheme("oscuro");
+    expect(mockStorage["sii_visual_theme"]).toBe("oscuro");
+    syncVisualState();
+    expect(mockStorage["sii_visual_theme"]).toBe("oscuro");
+
+    setVisualTheme("claro");
+    expect(mockStorage["sii_visual_theme"]).toBe("claro");
+  });
+
+  it("rewrites ?tema= in the URL so it does not override the new choice", () => {
+    let replaced = "";
+    (globalThis as unknown as Record<string, unknown>).window = {
+      location: { search: "?tema=claro", href: "https://portal.test/horario?tema=claro" },
+      history: {
+        state: null,
+        replaceState: (_s: unknown, _t: string, url: string) => {
+          replaced = url;
+        },
+      },
+    };
+    syncVisualState();
+    setVisualTheme("oscuro");
+    expect(replaced).toContain("tema=oscuro");
+    expect(replaced).toContain("/horario");
   });
 });

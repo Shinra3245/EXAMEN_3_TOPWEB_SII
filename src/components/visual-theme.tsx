@@ -97,6 +97,32 @@ export function syncVisualState(): boolean {
   return false;
 }
 
+/**
+ * Cambia el tema claro/oscuro desde la interfaz. Persiste en localStorage y,
+ * si la URL ya trae ?tema=, la actualiza para que no prevalezca el valor viejo.
+ */
+export function setVisualTheme(theme: VisualTheme): void {
+  if (currentState.theme === theme) return;
+  currentState = { ...currentState, theme };
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("sii_visual_theme", theme);
+    } catch {
+      // Storage might be disabled or restricted
+    }
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("tema")) {
+        url.searchParams.set("tema", theme);
+        window.history.replaceState(window.history.state, "", url.toString());
+      }
+    } catch {
+      // URL/history no disponibles
+    }
+  }
+  notify();
+}
+
 function subscribe(callback: () => void) {
   listeners.add(callback);
   return () => {

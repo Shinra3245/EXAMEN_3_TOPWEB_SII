@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import {
   useVisualTheme,
+  setVisualTheme,
   appendVisualParams,
   type VisualState,
 } from "@/components/visual-theme";
@@ -20,6 +21,8 @@ import {
   IconAdminReportes,
   IconAdminTipos,
   IconLogout,
+  IconSun,
+  IconMoon,
   IconMenu,
   IconClose,
   VisualSparks,
@@ -249,6 +252,21 @@ export function AppShell({ children }: AppShellProps) {
     </button>
   );
 
+  const isDark = visual.theme === "oscuro";
+  const themeButton = (
+    <button
+      type="button"
+      onClick={() => setVisualTheme(isDark ? "claro" : "oscuro")}
+      aria-pressed={isDark}
+      className="visual-logout-btn visual-theme-btn"
+    >
+      {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
+      <span className="visual-logout-label">
+        {isDark ? "Tema claro" : "Tema oscuro"}
+      </span>
+    </button>
+  );
+
   const renderNavItem = (item: NavEntry) => {
     const isActive = pathname === item.href;
     const Icon = item.icon;
@@ -295,6 +313,7 @@ export function AppShell({ children }: AppShellProps) {
             isIllustration ? (
               <div className="vs-masthead-actions">
                 {userChip}
+                {themeButton}
                 {logoutButton}
               </div>
             ) : null
@@ -333,6 +352,7 @@ export function AppShell({ children }: AppShellProps) {
           {!isIllustration && (
             <div className="visual-sidebar-footer">
               {userChip}
+              {themeButton}
               {logoutButton}
             </div>
           )}
