@@ -526,3 +526,119 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.
   line-height: 1.4;
 }
 dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.modal-title span { font-size: inherit; }
+
+/* ==========================================================================
+   Desplegables personalizados (select con appearance: base-select).
+   Navegadores sin soporte conservan el select nativo con flecha pixel.
+   ========================================================================== */
+@supports (appearance: base-select) {
+  [data-visual-shell][data-visual-style="pixelretro"] select,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select,
+  [data-visual-shell][data-visual-style="pixelretro"] select::picker(select),
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select::picker(select) {
+    appearance: base-select;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select {
+    min-width: 15rem;
+    padding-right: 2.75rem;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select::picker-icon,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select::picker-icon {
+    display: none;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select::picker(select),
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select::picker(select) {
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-block;
+    min-width: anchor-size(width);
+    margin: 6px 0 0;
+    padding: 0.35rem;
+    border: 3px solid var(--surface-border);
+    border-radius: 0;
+    background: var(--surface-bg);
+    box-shadow: 5px 5px 0 var(--surface-border);
+    max-height: min(26rem, 70vh);
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out),
+      display var(--dur-med) allow-discrete, overlay var(--dur-med) allow-discrete;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select:open::picker(select),
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select:open::picker(select) {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    [data-visual-shell][data-visual-style="pixelretro"] select:open::picker(select),
+    dialog[data-visual-modal][data-visual-style="pixelretro"] select:open::picker(select) {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select option,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 2px 0;
+    padding: 0.5rem 0.85rem;
+    border: 2px solid transparent;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select option:hover,
+  [data-visual-shell][data-visual-style="pixelretro"] select option:focus-visible,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select option:hover,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select option:focus-visible {
+    background: var(--row-hover);
+    border-color: var(--brand-primary);
+    outline: none;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] select option:checked,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select option:checked {
+    background: var(--brand-primary);
+    border-color: var(--surface-border);
+    color: var(--brand-contrast);
+  }
+
+  /* Marca pixel de la opción elegida. */
+  [data-visual-shell][data-visual-style="pixelretro"] select option::checkmark,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    content: "■";
+    font-size: 0.7rem;
+  }
+}
+
+/* Chip del alumno: muestra el nombre completo y se adapta a cualquier largo. */
+[data-visual-shell][data-visual-style="pixelretro"] .visual-sidebar-footer {
+  flex-wrap: wrap;
+}
+[data-visual-shell][data-visual-style="pixelretro"] .vs-user-chip {
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+[data-visual-shell][data-visual-style="pixelretro"] .vs-user-name {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
