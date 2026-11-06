@@ -22,7 +22,7 @@ export function validateSameOrigin(req: Request): void {
     ? new URL(configuredAppOrigin).origin
     : reqOrigin;
 
-  // Host and X-Forwarded-* are request input, not a trusted origin allowlist.
+  // Host y X-Forwarded-* vienen de la petición y no forman una lista confiable.
   if (origin !== expectedOrigin) {
     throw new ForbiddenError(
       "CROSS_ORIGIN_REQUEST_FORBIDDEN",

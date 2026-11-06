@@ -1,0 +1,487 @@
+/* La ruta de login no carga las fuentes del menú: se declara Manrope aquí. */
+@font-face {
+  font-family: "LoginManrope";
+  src: url("/assets/visual/fonts/Manrope.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+.loginPage {
+  --login-text-font: "LoginManrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --login-bg: var(--pixel-cloud);
+  --login-surface: var(--pixel-surface);
+  --login-ink: var(--pixel-ink);
+  --login-muted: var(--pixel-muted);
+  --login-blue: var(--pixel-blue);
+  --login-yellow: var(--pixel-yellow);
+  --login-border: #2a0b53;
+  --login-purple: #6848c2;
+  --login-purple-hover: #583bb3;
+  --login-orange: #ff7a30;
+  --login-orange-hover: #ff8c4a;
+  --login-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--login-bg);
+  color: var(--login-ink);
+  font-family: var(--login-text-font);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+  height: clamp(190px, 27vh, 270px);
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #73b8ed, #dff5ff);
+}
+
+.bannerImage {
+  object-fit: cover;
+  object-position: center 47%;
+}
+
+.bannerFade {
+  position: absolute;
+  inset: 42% 0 0;
+  background: linear-gradient(180deg, transparent, var(--login-bg));
+}
+
+.loginLayout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(190px, 285px);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(32px, 7vw, 96px);
+  width: min(100% - 40px, 920px);
+  margin: -22px auto 0;
+  padding-bottom: 40px;
+}
+
+.loginCard {
+  min-width: 0;
+  padding: clamp(24px, 4vw, 36px);
+  border: 3px solid var(--login-border);
+  border-radius: 0;
+  background: var(--login-surface);
+  box-shadow: 8px 8px 0 var(--login-border);
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translate(-6px, 14px); box-shadow: 0 0 0 var(--login-border); }
+  to { opacity: 1; transform: none; box-shadow: 8px 8px 0 var(--login-border); }
+}
+
+.loginHeader {
+  margin-bottom: 26px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 5px 12px;
+  border: 2px solid var(--login-border);
+  background: var(--login-purple);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.loginHeader h1 {
+  margin: 0;
+  color: var(--login-orange);
+  font-family: var(--font-pixel-display), monospace;
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 400;
+  line-height: 1.6;
+  text-shadow: 2px 2px 0 var(--login-border);
+}
+
+.loginHeader > p:last-child {
+  margin: 12px 0 0;
+  color: #2c4660;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.form {
+  margin: 0;
+}
+
+.fieldset {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field label {
+  color: #2a0b53;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 9px 14px;
+  border: 2px solid var(--login-border);
+  border-radius: 0;
+  outline: none;
+  background: #fff;
+  box-shadow: inset 2px 2px 0 rgb(42 11 83 / 10%);
+  color: var(--login-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  transition: border-color 160ms var(--login-ease), box-shadow 160ms var(--login-ease);
+}
+
+.field input:hover:not(:focus) {
+  border-color: var(--login-purple);
+}
+
+.field input:focus {
+  border-color: var(--login-purple);
+  box-shadow: 3px 3px 0 var(--login-orange);
+}
+
+.field input::placeholder {
+  color: #4a6478;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.field input:focus-visible,
+.showPasswordButton:focus-visible,
+.secondaryButton:focus-visible,
+.submitButton:focus-visible {
+  outline: 3px solid var(--login-orange);
+  outline-offset: 3px;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
+.passwordField {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.passwordField input {
+  flex: 1 1 auto;
+}
+
+.showPasswordButton,
+.secondaryButton {
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 2px solid var(--login-border);
+  border-radius: 0;
+  background: var(--login-purple);
+  box-shadow: 3px 3px 0 var(--login-border);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  transition: transform 120ms var(--login-ease), box-shadow 120ms var(--login-ease), background-color 160ms var(--login-ease);
+}
+
+/*
+ * globals.css define `button:hover:not(:disabled)` con fondo gris claro (0,2,1).
+ * Estas reglas deben pesar más para que el texto blanco nunca quede sobre gris claro.
+ */
+.loginPage .showPasswordButton:hover:not(:disabled),
+.loginPage .secondaryButton:hover:not(:disabled),
+.loginPage .showPasswordButton:focus-visible,
+.loginPage .secondaryButton:focus-visible {
+  background-color: var(--login-purple-hover);
+  color: #ffffff;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--login-border);
+}
+
+.loginPage .showPasswordButton:active:not(:disabled),
+.loginPage .secondaryButton:active:not(:disabled) {
+  background-color: #482a9d;
+  color: #ffffff;
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--login-border);
+}
+
+.fieldError {
+  margin: 0;
+  color: #8f1238;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.loginPage .submitButton {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 6px;
+  padding: 10px 16px;
+  border: 3px solid var(--login-border);
+  border-radius: 0;
+  background: var(--login-orange);
+  box-shadow: 4px 4px 0 var(--login-border);
+  color: #1b083f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  transition: background-color 160ms var(--login-ease), transform 120ms var(--login-ease), box-shadow 120ms var(--login-ease);
+}
+
+.loginPage .submitButton:hover:not(:disabled) {
+  background: var(--login-orange-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--login-border);
+}
+
+.loginPage .submitButton:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--login-border);
+}
+
+.loginPage .submitButton:disabled {
+  background: #e6dcfa;
+  color: #3b2a63;
+  box-shadow: none;
+  opacity: 1;
+  cursor: progress;
+}
+
+.securityNote {
+  margin: 18px 0 0;
+  color: #2c4660;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.notice,
+.error {
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--login-border);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  animation: cardEnter 260ms var(--login-ease) both;
+}
+
+.notice {
+  border: 2px solid var(--login-border);
+  background: #ede8fa;
+  color: #1b083f;
+}
+
+.notice progress {
+  margin-right: 6px;
+  accent-color: var(--login-blue);
+}
+
+.error {
+  border: 2px solid var(--login-border);
+  background: #ffe6f0;
+  color: #7a0f38;
+}
+
+.error p {
+  margin: 0 0 10px;
+}
+
+.error p:last-child {
+  margin-bottom: 0;
+}
+
+.mascot {
+  width: 100%;
+  max-width: 285px;
+  margin: 0;
+  text-align: center;
+}
+
+.mascotSprite {
+  width: 100%;
+  aspect-ratio: 27 / 37;
+  background-image: url("/assets/juanito-writing-sprite.png");
+  background-repeat: no-repeat;
+  background-size: 800% 100%;
+  animation: writeFrames 1.12s steps(1, end) infinite;
+  image-rendering: pixelated;
+}
+
+.mascot figcaption {
+  margin-top: 6px;
+  color: #2c4660;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@keyframes writeFrames {
+  0% { background-position: 0% 0; }
+  12.5% { background-position: 14.286% 0; }
+  25% { background-position: 28.571% 0; }
+  37.5% { background-position: 42.857% 0; }
+  50% { background-position: 57.143% 0; }
+  62.5% { background-position: 71.429% 0; }
+  75% { background-position: 85.714% 0; }
+  87.5%, 100% { background-position: 100% 0; }
+}
+
+/* Canvas decorativo del efecto de dibujado; su color de texto es el del fondo. */
+.mosaic {
+  position: absolute;
+  inset: 0 -16px -16px;
+  z-index: 5;
+  width: calc(100% + 32px);
+  height: calc(100% + 16px);
+  color: var(--login-bg);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .banner {
+    height: 128px;
+  }
+
+  .loginLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: min(100% - 28px, 430px);
+    margin-top: -10px;
+    padding-bottom: 8px;
+  }
+
+  .loginCard {
+    padding: 17px 16px;
+  }
+
+  .loginHeader {
+    margin-bottom: 12px;
+  }
+
+  .eyebrow {
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .loginHeader > p:last-child {
+    margin-top: 6px;
+    font-size: 16px;
+  }
+
+  .fieldset {
+    gap: 11px;
+  }
+
+  .field input {
+    min-height: 48px;
+    font-size: 17px;
+  }
+
+  .submitButton {
+    min-height: 46px;
+    margin-top: 2px;
+  }
+
+  .securityNote {
+    margin-top: 9px;
+    font-size: 13.5px;
+  }
+
+  .mascot {
+    width: min(28vw, 118px);
+    justify-self: center;
+  }
+
+  .mascot figcaption {
+    margin-top: 1px;
+    font-size: 14px;
+  }
+
+  .notice,
+  .error {
+    padding: 8px 10px;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 641px) {
+  .banner {
+    height: clamp(150px, 23vh, 210px);
+  }
+
+  .loginLayout {
+    gap: 28px;
+    padding-bottom: 18px;
+  }
+
+  .loginCard {
+    padding: 22px 28px;
+  }
+
+  .loginHeader {
+    margin-bottom: 17px;
+  }
+
+  .fieldset {
+    gap: 12px;
+  }
+
+  .field input {
+    min-height: 46px;
+  }
+
+  .mascot {
+    max-width: 210px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submitButton,
+  .showPasswordButton,
+  .secondaryButton,
+  .loginCard,
+  .mosaic,
+  .notice,
+  .error,
+  .field input,
+  .mascotSprite {
+    transition: none;
+    animation: none;
+  }
+
+  .mosaic {
+    display: none;
+  }
+
+  .mascotSprite {
+    background-position: 0 0;
+  }
+}

@@ -6,6 +6,26 @@ describe("Contrato institucional y transporte",()=>{
  it("usa las cinco rutas verificadas, no rutas abreviadas",()=>{
   expect(SII_ENDPOINTS).toEqual({LOGIN:"/api/login",STUDENT:"/api/movil/estudiante",GRADES:"/api/movil/estudiante/calificaciones",KARDEX:"/api/movil/estudiante/kardex",SCHEDULE:"/api/movil/estudiante/horarios"});
  });
+ it("rechaza GET para login antes de contactar al SII", async () => {
+  const fetcher = vi.fn().mockResolvedValue(json({ message: { login: { token: "token-sintetico" } } }));
+  vi.stubGlobal("fetch", fetcher);
+
+  await expect(requestSii(SII_ENDPOINTS.LOGIN)).rejects.toMatchObject({
+   errorCode: "DISALLOWED_UPSTREAM_METHOD",
+   statusCode: 403,
+  });
+  expect(fetcher).not.toHaveBeenCalled();
+ });
+ it("rechaza POST para recursos académicos antes de contactar al SII", async () => {
+  const fetcher = vi.fn().mockResolvedValue(json({ code: 200, flag: true, data: {} }));
+  vi.stubGlobal("fetch", fetcher);
+
+  await expect(requestSii(SII_ENDPOINTS.STUDENT, { method: "POST", body: {} })).rejects.toMatchObject({
+   errorCode: "DISALLOWED_UPSTREAM_METHOD",
+   statusCode: 403,
+  });
+  expect(fetcher).not.toHaveBeenCalled();
+ });
  it("rechaza origen configurable arbitrario",async()=>{
   vi.stubEnv("SII_BASE_URL","https://otro.invalid");await expect(requestSii(SII_ENDPOINTS.STUDENT)).rejects.toThrow();
  });

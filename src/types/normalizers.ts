@@ -2,6 +2,7 @@
 
 export interface PeriodoDTO { clave_periodo: string; anio: number | null; descripcion_periodo: string; }
 export type DiaSemana = "lunes" | "martes" | "miercoles" | "jueves" | "viernes" | "sabado";
+// `salon` es null cuando hay horario para ese día, pero falta la clave del salón.
 export interface SesionHorarioDTO { dia: DiaSemana; inicio: string; fin: string; salon: string | null; }
 
 export interface StudentProfileDTO {
@@ -28,6 +29,8 @@ export interface KardexDTO {
   kardex: KardexItemDTO[];
 }
 
+// Resultado local, no oficial del SII; origenFinal es null si queda pendiente
+// y motivoFinal explica por qué no pudo calcularse.
 export interface FinalCalculationDTO {
   resultadoFinal: number | null;
   estadoFinal: "calculada" | "pendiente";
@@ -47,6 +50,8 @@ export interface GradesPeriodDTO {
   materias: NormalizedGradeMateria[];
 }
 
+// Conserva el valor original de cada día: los rangos interpretados quedan en
+// `sesiones` y los valores no reconocidos se indican en `diasNoInterpretados`.
 export interface ScheduleItemDTO {
   sesiones: SesionHorarioDTO[];
   diasNoInterpretados: DiaSemana[];

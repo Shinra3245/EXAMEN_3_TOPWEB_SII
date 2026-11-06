@@ -1,40 +1,129 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- decoración estática local, sin datos */
 
-import React, { useState, useEffect, type ReactNode } from "react";
+import React, { useState, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import {
+  useVisualTheme,
+  setVisualTheme,
+  appendVisualParams,
+  type VisualState,
+} from "@/components/visual-theme";
+import "@/styles/visual-comparison.css";
+import "@/styles/pixel-polish.css";
+import {
+  IconHome,
+  IconCalificaciones,
+  IconLayers,
+  IconCalendar,
+  IconReportes,
+  IconAdminReportes,
+  IconAdminTipos,
+  IconLogout,
+  IconSun,
+  IconMoon,
+  IconMenu,
+  IconClose,
+  VisualSparks,
+} from "@/components/visual-icons";
 
 interface AppShellProps {
   children: ReactNode;
 }
 
-const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/calificaciones", label: "Calificaciones" },
-  { href: "/kardex", label: "Kardex" },
-  { href: "/horario", label: "Horario" },
+type NavTone = "blue" | "orange" | "pink" | "green" | "violet";
+
+interface NavEntry {
+  href: string;
+  label: string;
+  icon: (props: { size?: number }) => React.JSX.Element;
+  tone: NavTone;
+}
+
+const NAV_ITEMS: NavEntry[] = [
+  { href: "/dashboard", label: "Inicio", icon: IconHome, tone: "blue" },
+  { href: "/calificaciones", label: "Calificaciones", icon: IconCalificaciones, tone: "orange" },
+  { href: "/kardex", label: "Kardex", icon: IconLayers, tone: "blue" },
+  { href: "/horario", label: "Horario", icon: IconCalendar, tone: "pink" },
+  { href: "/reportes", label: "Reportes", icon: IconReportes, tone: "green" },
 ];
+
+const ADMIN_ITEMS: NavEntry[] = [
+  { href: "/admin/reportes", label: "Admin: Reportes", icon: IconAdminReportes, tone: "violet" },
+  { href: "/admin/tipos", label: "Admin: Tipos", icon: IconAdminTipos, tone: "orange" },
+];
+
+/** Capas decorativas de la familia ilustración: no reciben foco ni bloquean datos. */
+function IllustrationBackdrop() {
+  return (
+    <div className="vs-backdrop" aria-hidden="true">
+      <span className="vs-blob vs-blob-tl" />
+      <span className="vs-blob vs-blob-bl" />
+      <span className="vs-blob vs-blob-br" />
+      <img
+        src="/assets/visual/pink-laptop.png"
+        alt=""
+        className="vs-deco vs-deco-pink"
+        decoding="async"
+      />
+      <img
+        src="/assets/visual/green-buddy.png"
+        alt=""
+        className="vs-deco vs-deco-green"
+        decoding="async"
+      />
+    </div>
+  );
+}
+
+function Masthead({
+  visual,
+  children,
+  actions,
+}: {
+  visual: VisualState;
+  children?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <header className="vs-masthead">
+      {children}
+      <div className="vs-brand">
+        <p className="vs-portal-title">
+          <span>Portal</span> <span>académico</span>
+        </p>
+        {visual.style === "ilustracion" && (
+          <VisualSparks className="vs-title-sparks" size={44} />
+        )}
+      </div>
+      {visual.style === "ilustracion" ? (
+        <img
+          src="/assets/visual/cloud-blue.png"
+          alt=""
+          aria-hidden="true"
+          className="vs-deco vs-deco-cloud"
+          decoding="async"
+        />
+      ) : (
+        <div className="vs-mosaic-band" aria-hidden="true" />
+      )}
+      {actions}
+    </header>
+  );
+}
 
 export function AppShell({ children }: AppShellProps) {
   const { student, esAdmin, status, message, refresh, logout } = useAuth();
+  const visual = useVisualTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const navLinks = [
-    ...NAV_LINKS,
-    { href: "/reportes", label: "Reportes" },
-    ...(esAdmin
-      ? [
-          { href: "/admin/reportes", label: "Admin: Reportes" },
-          { href: "/admin/tipos", label: "Admin: Tipos" },
-        ]
-      : []),
-  ];
 
   // Redirigir a login si el estado es unauthenticated
   useEffect(() => {
@@ -48,6 +137,19 @@ export function AppShell({ children }: AppShellProps) {
     setPrevPathname(pathname);
     setMobileMenuOpen(false);
   }
+
+  // Escape cierra el menú móvil y devuelve el foco al botón que lo abrió.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -65,16 +167,30 @@ export function AppShell({ children }: AppShellProps) {
     }
   };
 
+  const shellProps = {
+    className: "visual-shell",
+    "data-visual-shell": "true",
+    "data-visual-style": visual.style,
+    "data-visual-theme": visual.theme,
+  } as const;
+
   // 1. Estado Loading: no renderizar hijos privados
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
-          <h1 className="text-xl font-bold">Portal académico</h1>
-        </header>
-        <main className="controls p-8" aria-busy="true" aria-live="polite">
-          <p>Cargando información del portal...</p>
-        </main>
+      <div {...shellProps}>
+        {visual.style === "ilustracion" && <IllustrationBackdrop />}
+        <div className="vs-stage vs-stage-bare">
+          <Masthead visual={visual} />
+          <main
+            className="visual-page-content vs-bare-content"
+            aria-busy="true"
+            aria-live="polite"
+          >
+            <div className="visual-card text-center p-8">
+              <p className="text-lg font-semibold">Cargando información del portal...</p>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
@@ -82,18 +198,25 @@ export function AppShell({ children }: AppShellProps) {
   // 2. Estado Error: no renderizar hijos privados, permitir reintento
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
-          <h1 className="text-xl font-bold">Portal académico</h1>
-        </header>
-        <main className="controls p-8" role="alert">
-          <div className="error">
-            <p>{message || "Error al verificar la sesión académica."}</p>
-            <button type="button" onClick={() => refresh()} className="mt-2">
-              Reintentar
-            </button>
-          </div>
-        </main>
+      <div {...shellProps}>
+        {visual.style === "ilustracion" && <IllustrationBackdrop />}
+        <div className="vs-stage vs-stage-bare">
+          <Masthead visual={visual} />
+          <main className="visual-page-content vs-bare-content" role="alert">
+            <div className="visual-card p-6">
+              <p className="vs-error-text font-semibold">
+                {message || "Error al verificar la sesión académica."}
+              </p>
+              <button
+                type="button"
+                onClick={() => refresh()}
+                className="btn-primary mt-4"
+              >
+                Reintentar
+              </button>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
@@ -101,154 +224,167 @@ export function AppShell({ children }: AppShellProps) {
   // 3. Estado Unauthenticated: no renderizar hijos privados
   if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <header className="border-b border-gray-200 p-4">
-          <h1 className="text-xl font-bold">Portal académico</h1>
-        </header>
-        <main className="controls p-8" aria-live="polite">
-          <p>Redirigiendo al inicio de sesión...</p>
-        </main>
+      <div {...shellProps}>
+        {visual.style === "ilustracion" && <IllustrationBackdrop />}
+        <div className="vs-stage vs-stage-bare">
+          <Masthead visual={visual} />
+          <main className="visual-page-content vs-bare-content" aria-live="polite">
+            <p>Redirigiendo al inicio de sesión...</p>
+          </main>
+        </div>
       </div>
     );
   }
 
+  const roleLabel = esAdmin ? "Administración" : "Alumno";
+  const isIllustration = visual.style === "ilustracion";
+
+  const logoutButton = (
+    <button
+      type="button"
+      onClick={handleLogout}
+      disabled={isLoggingOut}
+      className="visual-logout-btn"
+    >
+      <IconLogout size={20} />
+      <span className="visual-logout-label">
+        {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+      </span>
+    </button>
+  );
+
+  const isDark = visual.theme === "oscuro";
+  const themeButton = (
+    <button
+      type="button"
+      onClick={() => setVisualTheme(isDark ? "claro" : "oscuro")}
+      aria-pressed={isDark}
+      className="visual-logout-btn visual-theme-btn"
+    >
+      {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
+      <span className="visual-logout-label">
+        {isDark ? "Tema claro" : "Tema oscuro"}
+      </span>
+    </button>
+  );
+
+  const renderNavItem = (item: NavEntry) => {
+    const isActive = pathname === item.href;
+    const Icon = item.icon;
+    return (
+      <li key={item.href}>
+        <Link
+          href={appendVisualParams(item.href, visual)}
+          aria-current={isActive ? "page" : undefined}
+          data-tone={item.tone}
+          className={`visual-nav-item ${isActive ? "is-active" : ""}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <span className="visual-nav-icon">
+            <Icon size={26} />
+          </span>
+          <span>{item.label}</span>
+        </Link>
+      </li>
+    );
+  };
+
+  const userChip = student ? (
+    <div className="vs-user-chip">
+      <span className="vs-user-role">{roleLabel}</span>
+      <span className="vs-user-name">
+        {student.persona || student.numero_control}
+      </span>
+    </div>
+  ) : null;
+
   // 4. Estado Authenticated: renderizar AppShell con navegación y children
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <a href="#main-content" className="sr-only">
+    <div {...shellProps}>
+      <a href="#main-content" className="skip-link">
         Saltar al contenido principal
       </a>
 
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xl font-bold">Portal académico</span>
-              {student && (
-                <div className="text-sm text-gray-600">
-                  <span>{student.persona || student.numero_control}</span>
-                  {student.numero_control && (
-                    <span className="ml-2">({student.numero_control})</span>
-                  )}
-                </div>
+      {isIllustration && <IllustrationBackdrop />}
+
+      <div className="vs-stage">
+        <Masthead
+          visual={visual}
+          actions={
+            isIllustration ? (
+              <div className="vs-masthead-actions">
+                {userChip}
+                {themeButton}
+                {logoutButton}
+              </div>
+            ) : null
+          }
+        >
+          <button
+            ref={toggleRef}
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="visual-nav-menu"
+            aria-label="Alternar menú de navegación"
+            className="visual-mobile-toggle"
+          >
+            {mobileMenuOpen ? <IconClose size={24} /> : <IconMenu size={24} />}
+          </button>
+        </Masthead>
+
+        <div
+          id="visual-nav-menu"
+          className={`visual-sidebar ${mobileMenuOpen ? "is-open" : ""}`}
+        >
+          <nav aria-label="Menú principal">
+            <ul className="visual-nav-list">
+              {NAV_ITEMS.map(renderNavItem)}
+
+              {esAdmin && (
+                <>
+                  <li className="visual-nav-section-title">Administración</li>
+                  {ADMIN_ITEMS.map(renderNavItem)}
+                </>
               )}
+            </ul>
+          </nav>
+
+          {!isIllustration && (
+            <div className="visual-sidebar-footer">
+              {userChip}
+              {themeButton}
+              {logoutButton}
             </div>
-
-            {/* Botón de menú móvil */}
-            <div className="sm:hidden">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-expanded={mobileMenuOpen}
-                aria-controls="academic-nav-menu"
-                aria-label="Alternar menú de navegación"
-              >
-                {mobileMenuOpen ? "Cerrar menú" : "Menú"}
-              </button>
-            </div>
-
-            {/* Navegación en escritorio */}
-            <nav
-              className="hidden sm:flex sm:items-center sm:gap-4"
-              aria-label="Navegación principal"
-            >
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={
-                      isActive
-                        ? "font-semibold underline"
-                        : "text-gray-700 hover:underline"
-                    }
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                aria-label="Cerrar sesión"
-              >
-                {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              </button>
-            </nav>
-          </div>
-
-          {/* Menú móvil desplegable */}
-          {mobileMenuOpen && (
-            <nav
-              id="academic-nav-menu"
-              className="mt-3 border-t border-gray-200 pt-3 sm:hidden"
-              aria-label="Navegación móvil"
-            >
-              <ul className="flex flex-col gap-2 list-none p-0 m-0">
-                {navLinks.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        aria-current={isActive ? "page" : undefined}
-                        className={
-                          isActive
-                            ? "block font-semibold underline py-1"
-                            : "block text-gray-700 hover:underline py-1"
-                        }
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-                <li className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="w-full text-left"
-                  >
-                    {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-                  </button>
-                </li>
-              </ul>
-            </nav>
           )}
         </div>
-      </header>
 
-      {logoutError && (
-        <aside
-          role="alert"
-          aria-live="assertive"
-          className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8"
-        >
-          <div className="error">
-            <p>{logoutError}</p>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="mt-2"
-            >
-              Reintentar cierre de sesión
-            </button>
-          </div>
-        </aside>
-      )}
+        <div className="visual-main-area">
+          {logoutError && (
+            <div role="alert" aria-live="assertive" className="vs-logout-error">
+              <div className="visual-card p-4">
+                <p>{logoutError}</p>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="btn-secondary mt-2 text-sm"
+                >
+                  Reintentar cierre de sesión
+                </button>
+              </div>
+            </div>
+          )}
 
-      <main
-        key={student?.numero_control ?? "anonymous"}
-        id="main-content"
-        className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"
-      >
-        {children}
-      </main>
+          <main
+            key={student?.numero_control ?? "anonymous"}
+            id="main-content"
+            className="visual-page-content"
+          >
+            {children}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

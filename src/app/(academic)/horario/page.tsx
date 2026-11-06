@@ -1,9 +1,11 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useResource } from "@/hooks/use-resource";
 import { ResourceState } from "@/components/resource-state";
 import { Modal } from "@/components/modal";
+import { useVisualTheme, appendVisualParams } from "@/components/visual-theme";
 import { dayLabels, periodLabel } from "@/lib/academic-presentation";
 import { apiRequest, ApiClientError } from "@/lib/api-client";
 import type {
@@ -14,6 +16,13 @@ import type {
   PeriodoDTO,
 } from "@/types/normalizers";
 import type { FaultTypeDTO } from "@/types/api";
+import {
+  IconRefresh,
+  IconFilter,
+  IconReportes,
+  IconCheck,
+  IconAlert,
+} from "@/components/visual-icons";
 
 const days = Object.keys(dayLabels) as DiaSemana[];
 
@@ -26,6 +35,7 @@ interface ActiveSessionReport {
 export default function SchedulePage() {
   const resource = useResource<SchedulePeriodDTO[]>("/api/schedule");
   const typesResource = useResource<FaultTypeDTO[]>("/api/report-types");
+  const visual = useVisualTheme();
   const [period, setPeriod] = useState("");
   const [day, setDay] = useState("");
 
@@ -116,6 +126,7 @@ export default function SchedulePage() {
   const groups = (resource.data ?? [])
     .map((group, index) => ({ group, index }))
     .filter(({ index }) => !period || period === String(index));
+
   const sessions = groups.flatMap(({ group, index }) =>
     group.horario.flatMap((subject, subjectIndex) =>
       subject.sesiones
@@ -128,6 +139,7 @@ export default function SchedulePage() {
         }))
     )
   );
+
   const unparsed = groups.flatMap(({ group, index }) =>
     group.horario.flatMap((subject, subjectIndex) =>
       subject.diasNoInterpretados
@@ -140,35 +152,56 @@ export default function SchedulePage() {
         }))
     )
   );
+
   return (
-    <>
-      <h1>Horario</h1>
-      <p>
-        Lista por día y hora. Aulas y franjas se muestran únicamente cuando el
-        SII las proporciona.
-      </p>
-      <button
-        type="button"
-        disabled={resource.loading}
-        onClick={() => {
-          void resource.refresh();
-        }}
-      >
-        Actualizar horario
-      </button>
+    <div className="schedule-view flex flex-col gap-6">
+      {/* Header y Acción */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Horario
+          </h1>
+          <p className="text-sm text-muted mt-1 max-w-2xl">
+            Lista por día y hora. Aulas y franjas se muestran únicamente cuando el
+            SII las proporciona.
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={resource.loading}
+          onClick={() => {
+            void resource.refresh();
+          }}
+          className="btn-secondary"
+          aria-label="Actualizar horario"
+        >
+          <IconRefresh size={18} />
+          <span>{resource.loading ? "Actualizando..." : "Actualizar horario"}</span>
+        </button>
+      </div>
+
       <ResourceState
         {...resource}
         retry={() => {
           void resource.refresh();
         }}
       >
-        <div className="controls">
-          <label>
-            Periodo
+        {/* Panel de Filtros */}
+        <section
+          aria-labelledby="schedule-filters-heading"
+          className="visual-filter-toolbar"
+        >
+          <h2 id="schedule-filters-heading" className="sr-only">
+            Filtros del horario
+          </h2>
+
+          <label className="min-w-[180px]">
+            <span>Periodo</span>
             <select
               aria-label="Periodo"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
+              className="w-full"
             >
               <option value="">Todos los periodos</option>
               {resource.data?.map((g, i) => (
@@ -178,12 +211,14 @@ export default function SchedulePage() {
               ))}
             </select>
           </label>
-          <label>
-            Día
+
+          <label className="min-w-[180px]">
+            <span>Día de la semana</span>
             <select
               aria-label="Día"
               value={day}
               onChange={(e) => setDay(e.target.value)}
+              className="w-full"
             >
               <option value="">Todos los días</option>
               {days.map((d) => (
@@ -193,27 +228,40 @@ export default function SchedulePage() {
               ))}
             </select>
           </label>
+
           <button
             type="button"
             onClick={() => {
               setPeriod("");
               setDay("");
             }}
+            className="btn-secondary self-end"
           >
-            Limpiar filtros
+            <IconFilter size={16} />
+            <span>Limpiar filtros</span>
           </button>
-        </div>
-        <p role="status">
-          {sessions.length} sesiones mostradas; {unparsed.length} franjas sin
-          interpretar.
-        </p>
-        {!sessions.length && !unparsed.length && (
-          <p>
-            {resource.data?.some((g) => g.horario.length)
-              ? "No hay clases para los filtros seleccionados."
-              : "El SII no devolvió materias en el horario."}
+        </section>
+
+        {/* Status de conteo */}
+        <div className="text-sm text-muted font-semibold">
+          <p role="status">
+            {sessions.length} sesiones mostradas; {unparsed.length} franjas sin
+            interpretar.
           </p>
+        </div>
+
+        {/* Sin resultados */}
+        {!sessions.length && !unparsed.length && (
+          <div className="visual-card p-8 text-center text-muted">
+            <p className="font-semibold">
+              {resource.data?.some((g) => g.horario.length)
+                ? "No hay clases para los filtros seleccionados."
+                : "El SII no devolvió materias en el horario."}
+            </p>
+          </div>
         )}
+
+        {/* Bloque por día */}
         {days
           .filter((d) => !day || day === d)
           .map((d) => {
@@ -221,50 +269,80 @@ export default function SchedulePage() {
               .filter((row) => row.session.dia === d)
               .sort((a, b) => a.session.inicio.localeCompare(b.session.inicio));
             const raw = unparsed.filter((row) => row.day === d);
-            return !rows.length && !raw.length ? null : (
-              <section key={d} aria-labelledby={`day-${d}`}>
-                <h2 id={`day-${d}`}>{dayLabels[d]}</h2>
+
+            if (!rows.length && !raw.length) return null;
+
+            return (
+              <section
+                key={d}
+                aria-labelledby={`day-${d}`}
+                className="flex flex-col gap-3"
+              >
+                <h2
+                  id={`day-${d}`}
+                  className="text-xl font-extrabold tracking-tight text-main border-b border-[var(--surface-border)] pb-2"
+                >
+                  {dayLabels[d]}
+                </h2>
+
                 {rows.length > 0 && (
                   <div className="table-scroll">
                     <table>
                       <caption>
-                        Clases del {dayLabels[d].toLocaleLowerCase("es")}
+                        Clases programadas para el {dayLabels[d].toLocaleLowerCase("es")}
                       </caption>
                       <thead>
                         <tr>
-                          <th scope="col">Inicio</th>
-                          <th scope="col">Fin</th>
+                          <th scope="col">Horario</th>
                           <th scope="col">Materia</th>
-                          <th scope="col">Salón</th>
+                          <th scope="col">Salón / Aula</th>
                           <th scope="col">Periodo</th>
-                          <th scope="col">Reporte</th>
+                          <th scope="col">Reporte de aula</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map(({ subject, session, period, key }) => (
                           <tr key={key}>
-                            <td>{session.inicio}</td>
-                            <td>{session.fin}</td>
+                            <td className="whitespace-nowrap">
+                              <span className="tag tag-time">{session.inicio} – {session.fin}</span>
+                            </td>
                             <th scope="row">
-                              {subject.nombre_materia}
-                              <br />
-                              <small>{subject.clave_materia}</small>
+                              <span className="font-bold block">
+                                {subject.nombre_materia}
+                              </span>
+                              <small className="text-xs text-muted block font-mono">
+                                {subject.clave_materia}
+                              </small>
                             </th>
-                            <td>{session.salon || "No disponible"}</td>
-                            <td>{periodLabel(period)}</td>
+                            <td className="font-semibold">
+                              {session.salon ? (
+                                <span className="tag tag-room">
+                                  {session.salon}
+                                </span>
+                              ) : (
+                                <span className="text-muted text-xs">No disponible</span>
+                              )}
+                            </td>
+                            <td className="whitespace-nowrap">
+                              <span className="tag tag-period">{periodLabel(period)}</span>
+                            </td>
                             <td>
                               {session.salon ? (
                                 <button
                                   type="button"
+                                  className="btn-secondary text-xs"
                                   onClick={() =>
                                     openReportModal(subject, session, period)
                                   }
                                   aria-label={`Reportar falla en aula ${session.salon} de ${subject.nombre_materia}`}
                                 >
-                                  Reportar falla
+                                  <IconReportes size={14} />
+                                  <span>Reportar falla</span>
                                 </button>
                               ) : (
-                                <span className="text-gray-400">Sin aula</span>
+                                <span className="text-muted text-xs">
+                                  Sin aula
+                                </span>
                               )}
                             </td>
                           </tr>
@@ -273,13 +351,16 @@ export default function SchedulePage() {
                     </table>
                   </div>
                 )}
+
                 {raw.map(({ subject, key, period }) => (
-                  <p key={key} className="notice">
-                    Franja sin interpretar: {subject.nombre_materia} (
-                    {periodLabel(period)}):{" "}
-                    {subject[d] || "Sin horario legible"}. Se conserva el texto
-                    institucional.
-                  </p>
+                  <div
+                    key={key}
+                    className="visual-card p-3 text-xs bg-[var(--pastel-yellow-bg)] border-[var(--pastel-yellow-border)] text-[var(--pastel-yellow-text)]"
+                  >
+                    <strong>Franja sin interpretar:</strong> {subject.nombre_materia} (
+                    {periodLabel(period)}): {subject[d] || "Sin horario legible"}.
+                    Se conserva el texto institucional oficial.
+                  </div>
                 ))}
               </section>
             );
@@ -293,44 +374,47 @@ export default function SchedulePage() {
           onDismiss={closeModal}
           dismissible={!submitting}
         >
-          <div className="w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-            <h2 id="report-modal-title" className="text-xl font-bold mb-3">
-              Reportar falla en aula
+          <div className="modal-dialog-panel">
+            <h2 id="report-modal-title" className="modal-title">
+              <IconReportes size={22} />
+              <span>Reportar falla en aula</span>
             </h2>
 
-            <div className="mb-4 rounded bg-gray-50 p-3 border border-gray-200 text-sm">
+            <div className="info-card">
               <p>
-                <strong>Salón:</strong> {activeSession.session.salon}
+                <strong>Salón</strong> <span className="tag tag-room">{activeSession.session.salon}</span>
               </p>
               <p>
-                <strong>Materia:</strong>{" "}
-                {activeSession.subject.nombre_materia} (
-                {activeSession.subject.clave_materia})
+                <strong>Materia</strong> <span className="info-subject">{activeSession.subject.nombre_materia}</span>{" "}
+                <span className="tag tag-code">{activeSession.subject.clave_materia}</span>
               </p>
               <p>
-                <strong>Horario:</strong>{" "}
-                {dayLabels[activeSession.session.dia]}{" "}
-                {activeSession.session.inicio} - {activeSession.session.fin}
+                <strong>Horario</strong> <span className="tag tag-day">{dayLabels[activeSession.session.dia]}</span>{" "}
+                <span className="tag tag-time">{activeSession.session.inicio} - {activeSession.session.fin}</span>
               </p>
               <p>
-                <strong>Periodo:</strong>{" "}
-                {periodLabel(activeSession.period)}
+                <strong>Periodo</strong> <span className="tag tag-period">{periodLabel(activeSession.period)}</span>
               </p>
             </div>
 
             {reportSuccess ? (
-              <div role="status" className="mb-4">
-                <p className="text-green-800 font-semibold mb-3">
-                  {reportSuccess}
-                </p>
-                <div className="flex gap-2">
+              <div role="status" className="flex flex-col gap-4">
+                <div className="notice-box notice-success">
+                  <IconCheck size={18} className="text-green-600" />
+                  <span>{reportSuccess}</span>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-end">
                   <Link
-                    href="/reportes"
-                    className="inline-block px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700"
+                    href={appendVisualParams("/reportes", visual)}
+                    className="btn-primary"
                   >
                     Ver en módulo de Reportes
                   </Link>
-                  <button type="button" onClick={closeModal}>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="btn-secondary"
+                  >
                     Cerrar
                   </button>
                 </div>
@@ -338,17 +422,18 @@ export default function SchedulePage() {
             ) : (
               <form onSubmit={handleSubmitReport} className="flex flex-col gap-4">
                 {reportError && (
-                  <p role="alert" className="text-red-700 font-semibold">
-                    {reportError}
-                  </p>
+                  <div
+                    role="alert"
+                    className="notice-box notice-error"
+                  >
+                    <IconAlert size={18} className="text-red-600" />
+                    <span>{reportError}</span>
+                  </div>
                 )}
 
                 <div>
-                  <label
-                    htmlFor="fault-type-select"
-                    className="block font-semibold mb-1"
-                  >
-                    Tipo de falla:
+                  <label htmlFor="fault-type-select">
+                    Tipo de falla observada:
                   </label>
                   <select
                     id="fault-type-select"
@@ -358,7 +443,7 @@ export default function SchedulePage() {
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full"
+                    className="w-full mt-1"
                     required
                   >
                     <option value="">-- Selecciona el tipo de falla --</option>
@@ -371,11 +456,8 @@ export default function SchedulePage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="fault-description"
-                    className="block font-semibold mb-1"
-                  >
-                    Descripción de la falla (máx. 500 caracteres):
+                  <label htmlFor="fault-description">
+                    Descripción del desperfecto (máx. 500 caracteres):
                   </label>
                   <textarea
                     id="fault-description"
@@ -384,25 +466,29 @@ export default function SchedulePage() {
                     maxLength={500}
                     onChange={(e) => setDescripcion(e.target.value)}
                     placeholder="Describe claramente la falla observada en el aula..."
-                    className="w-full"
+                    className="w-full mt-1"
                     required
                   />
-                  <small className="text-gray-600">
+                  <small className="text-xs text-muted block mt-1">
                     {descripcion.length} / 500 caracteres
                   </small>
                 </div>
 
-                <div className="flex justify-end gap-2 mt-2">
+                <div className="flex justify-end gap-3 mt-2">
                   <button
                     type="button"
                     onClick={closeModal}
                     disabled={submitting}
+                    className="btn-secondary"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting || !selectedTipoId || !descripcion.trim()}
+                    disabled={
+                      submitting || !selectedTipoId || !descripcion.trim()
+                    }
+                    className="btn-primary"
                   >
                     {submitting ? "Enviando..." : "Enviar reporte"}
                   </button>
@@ -412,6 +498,6 @@ export default function SchedulePage() {
           </div>
         </Modal>
       )}
-    </>
+    </div>
   );
 }

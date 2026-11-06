@@ -1,6 +1,10 @@
 import "server-only";
-import { Client, ClientConfig } from "pg";
-import { getEnvVar, RequestEnv, requestEnvStorage } from "@/config/env";
+import { Client, type ClientConfig } from "pg";
+import {
+  getEnvVar,
+  requestEnvStorage,
+  type RequestEnv,
+} from "@/config/env";
 import { AppError, ConfigurationError } from "@/lib/errors";
 
 export const SUPABASE_DIRECT_HOST = "db.fegczgleshuzgymtqrkv.supabase.co";
@@ -128,7 +132,9 @@ export function parseAndValidateDatabaseUrl(rawUrl: string): ClientConfig {
     );
   }
 
-  if (parsed.hash || (parsed.pathname && parsed.pathname !== "/postgres")) throw new ConfigurationError("Base de datos no autorizada");
+  if (parsed.hash || (parsed.pathname && parsed.pathname !== "/postgres")) {
+    throw new ConfigurationError("Base de datos no autorizada");
+  }
 
   const database = parsed.pathname
     ? parsed.pathname.replace(/^\//, "") || "postgres"
@@ -157,8 +163,16 @@ export function createDatabaseClient(env?: RequestEnv): Client {
   if (context?.HYPERDRIVE) {
     // Binding de confianza de Cloudflare; Hyperdrive verifica TLS con el origen.
     // Este salto usa el transporte interno administrado por Workers.
-    if (typeof context.HYPERDRIVE.connectionString !== "string" || !context.HYPERDRIVE.connectionString) throw new ConfigurationError("Binding Hyperdrive inválido");
-    return new Client({ connectionString: context.HYPERDRIVE.connectionString, connectionTimeoutMillis: 5000, query_timeout: 5000 });
+    const connectionString = context.HYPERDRIVE.connectionString;
+    if (typeof connectionString !== "string" || !connectionString) {
+      throw new ConfigurationError("Binding Hyperdrive inválido");
+    }
+
+    return new Client({
+      connectionString,
+      connectionTimeoutMillis: 5000,
+      query_timeout: 5000,
+    });
   }
   const rawUrl =
     env?.DATABASE_URL !== undefined && env.DATABASE_URL !== null
@@ -191,13 +205,56 @@ export async function withDatabase<T>(
     if (error instanceof AppError) {
       throw error;
     }
-    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
-    const safeCodes = new Set(["42501", "28P01", "28000", "CERT_HAS_EXPIRED", "SELF_SIGNED_CERT_IN_CHAIN", "UNABLE_TO_VERIFY_LEAF_SIGNATURE", "DEPTH_ZERO_SELF_SIGNED_CERT", "ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "ERR_TLS_CERT_ALTNAME_INVALID"]);
-    if (safeCodes.has(code)) throw new AppError(503, `DATABASE_${code}`, "No se pudo establecer la conexión segura con la base de datos");
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String(error.code)
+        : "";
+    const safeCodes = new Set([
+      "42501",
+      "28P01",
+      "28000",
+      "CERT_HAS_EXPIRED",
+      "SELF_SIGNED_CERT_IN_CHAIN",
+      "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+      "DEPTH_ZERO_SELF_SIGNED_CERT",
+      "ECONNREFUSED",
+      "ETIMEDOUT",
+      "ENOTFOUND",
+      "ERR_TLS_CERT_ALTNAME_INVALID",
+    ]);
+    if (safeCodes.has(code)) {
+      throw new AppError(
+        503,
+        `DATABASE_${code}`,
+        "No se pudo establecer la conexión segura con la base de datos",
+      );
+    }
+
     const message = error instanceof Error ? error.message : "";
-    const categories = [ ["password authentication", "AUTH"], ["Tenant", "TENANT"], ["self-signed", "CERTIFICATE"], ["SASL", "SASL"], ["SSL", "SSL"], ["TLS", "TLS"], ["Connection terminated", "TERMINATED"], ["timeout", "TIMEOUT"], ["not implemented", "UNSUPPORTED"], ["Cloudflare", "RUNTIME"], ["connect", "CONNECT"] ];
-    const category = categories.find(([pattern]) => message.toLowerCase().includes(pattern.toLowerCase()));
-    if (category) throw new AppError(503, `DATABASE_${category[1]}`, "La conexión de base de datos no se completó");
+    const categories = [
+      ["password authentication", "AUTH"],
+      ["Tenant", "TENANT"],
+      ["self-signed", "CERTIFICATE"],
+      ["SASL", "SASL"],
+      ["SSL", "SSL"],
+      ["TLS", "TLS"],
+      ["Connection terminated", "TERMINATED"],
+      ["timeout", "TIMEOUT"],
+      ["not implemented", "UNSUPPORTED"],
+      ["Cloudflare", "RUNTIME"],
+      ["connect", "CONNECT"],
+    ];
+    const lowerCaseMessage = message.toLowerCase();
+    const category = categories.find(([pattern]) =>
+      lowerCaseMessage.includes(pattern.toLowerCase()),
+    );
+    if (category) {
+      throw new AppError(
+        503,
+        `DATABASE_${category[1]}`,
+        "La conexión de base de datos no se completó",
+      );
+    }
     // No registrar ni emitir credenciales, URIs ni trazas internas
     throw new AppError(
       503,

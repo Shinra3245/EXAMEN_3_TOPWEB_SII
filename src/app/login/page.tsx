@@ -1,9 +1,79 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { ApiClientError } from "@/lib/api-client";
+import styles from "./login.module.css";
+
+const TILE_PX = 6;
+const MOSAIC_MS = 1800;
+
+/**
+ * Efecto "se dibuja": un canvas del color del fondo cubre el login y borra
+ * cubitos diminutos en orden diagonal con ruido, revelando el recuadro píxel a píxel.
+ * Es decorativo: no recibe eventos y se omite con prefers-reduced-motion.
+ */
+function PixelMosaic({ className }: { className: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      canvas.style.display = "none";
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.scale(dpr, dpr);
+
+    const cols = Math.ceil(width / TILE_PX);
+    const rows = Math.ceil(height / TILE_PX);
+    const total = cols * rows;
+    const fill = getComputedStyle(canvas).color;
+
+    // Orden de aparición: barrido diagonal mezclado con ruido.
+    const order = new Float32Array(total);
+    for (let i = 0; i < total; i += 1) {
+      const diagonal = ((i % cols) / cols + Math.floor(i / cols) / rows) / 2;
+      order[i] = diagonal * 0.5 + Math.random() * 0.5;
+    }
+    const indexes = Array.from({ length: total }, (_, i) => i).sort(
+      (a, b) => order[a] - order[b],
+    );
+
+    ctx.fillStyle = fill;
+    ctx.fillRect(0, 0, width, height);
+
+    let cleared = 0;
+    let frame = 0;
+    const start = performance.now();
+    const step = (now: number) => {
+      const target = Math.min(total, Math.ceil(((now - start) / MOSAIC_MS) * total));
+      for (; cleared < target; cleared += 1) {
+        const idx = indexes[cleared];
+        ctx.clearRect((idx % cols) * TILE_PX, Math.floor(idx / cols) * TILE_PX, TILE_PX, TILE_PX);
+      }
+      if (cleared < total) {
+        frame = requestAnimationFrame(step);
+      } else {
+        canvas.style.display = "none";
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return <canvas ref={ref} className={className} aria-hidden="true" />;
+}
 
 export default function LoginPage() {
   const { login, status, message: sessionMessage, refresh } = useAuth();
@@ -92,57 +162,62 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <main className="sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <header className="mb-6 text-center">
-          <h1 className="text-2xl font-bold">Portal académico</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Accede con el correo y la contraseña del SII
-          </p>
-        </header>
+    <main className={styles.loginPage}>
+      <figure className={styles.banner} aria-hidden="true">
+        <Image
+          src="/assets/pixel-mosaic-login.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className={styles.bannerImage}
+        />
+        <div className={styles.bannerFade} />
+      </figure>
 
-        <section aria-labelledby="login-heading" className="bg-white">
-          <h2 id="login-heading" className="sr-only">
-            Formulario de inicio de sesión
-          </h2>
+      <div className={styles.loginLayout}>
+        <PixelMosaic className={styles.mosaic} />
+        <section className={styles.loginCard} aria-labelledby="login-heading">
+          <header className={styles.loginHeader}>
+            <p className={styles.eyebrow}>PORTAL ACADÉMICO · SII</p>
+            <h1 id="login-heading">Inicia sesión</h1>
+            <p>Accede con tu correo institucional y contraseña.</p>
+          </header>
 
           {status === "loading" && (
-            <p role="status">
+            <p role="status" className={styles.notice}>
               <progress aria-label="Verificando sesión" /> Verificando sesión…
             </p>
           )}
           {status === "error" && (
-            <div role="alert" className="error">
+            <div role="alert" className={styles.error}>
               <p>
                 {sessionMessage || "No se pudo verificar la sesión existente."}
               </p>
               <button
                 type="button"
+                className={styles.secondaryButton}
                 onClick={() => {
                   void refresh();
                 }}
               >
-                Reintentar verificación de sesión
+                Reintentar verificación
               </button>
             </div>
           )}
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            <fieldset disabled={isSubmitting} className="space-y-4">
+
+          <form onSubmit={handleSubmit} noValidate className={styles.form}>
+            <fieldset disabled={isSubmitting} className={styles.fieldset}>
               <legend className="sr-only">Credenciales de acceso</legend>
 
               {generalError && (
-                <div role="alert" className="error">
+                <div role="alert" className={styles.error}>
                   <p>{generalError}</p>
                 </div>
               )}
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Correo institucional
-                </label>
+              <div className={styles.field}>
+                <label htmlFor="email">Correo institucional</label>
                 <input
                   id="email"
                   name="email"
@@ -160,28 +235,18 @@ export default function LoginPage() {
                   aria-describedby={
                     fieldErrors.email ? "email-error" : undefined
                   }
-                  className="w-full"
-                  placeholder="Correo registrado en el SII"
+                  placeholder="nombre@institucion.edu.mx"
                 />
                 {fieldErrors.email && (
-                  <p
-                    id="email-error"
-                    role="alert"
-                    className="mt-1 text-sm text-red-600"
-                  >
+                  <p id="email-error" role="alert" className={styles.fieldError}>
                     {fieldErrors.email}
                   </p>
                 )}
               </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Contraseña
-                </label>
-                <div className="controls flex gap-2">
+              <div className={styles.field}>
+                <label htmlFor="password">Contraseña</label>
+                <div className={styles.passwordField}>
                   <input
                     id="password"
                     name="password"
@@ -202,10 +267,11 @@ export default function LoginPage() {
                     aria-describedby={
                       fieldErrors.password ? "password-error" : undefined
                     }
-                    className="flex-1 min-w-0"
+                    placeholder="Tu contraseña del SII"
                   />
                   <button
                     type="button"
+                    className={styles.showPasswordButton}
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
                       showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
@@ -215,30 +281,36 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {fieldErrors.password && (
-                  <p
-                    id="password-error"
-                    role="alert"
-                    className="mt-1 text-sm text-red-600"
-                  >
+                  <p id="password-error" role="alert" className={styles.fieldError}>
                     {fieldErrors.password}
                   </p>
                 )}
               </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                  aria-busy={isSubmitting}
-                >
-                  {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={styles.submitButton}
+                aria-busy={isSubmitting}
+              >
+                {isSubmitting ? "Iniciando sesión…" : "Iniciar sesión"}
+              </button>
             </fieldset>
           </form>
+          <p className={styles.securityNote}>
+            El acceso se verifica de forma segura con el SII.
+          </p>
         </section>
-      </main>
-    </div>
+
+        <figure className={styles.mascot}>
+          <div
+            className={styles.mascotSprite}
+            role="img"
+            aria-label="Juanito, el lince pixelado, escribe en su computadora."
+          />
+          <figcaption>Juanito te acompaña</figcaption>
+        </figure>
+      </div>
+    </main>
   );
 }

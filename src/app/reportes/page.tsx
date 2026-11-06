@@ -4,8 +4,17 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useResource } from "@/hooks/use-resource";
 import { ResourceState } from "@/components/resource-state";
+import { useVisualTheme, appendVisualParams } from "@/components/visual-theme";
 import { apiRequest, ApiClientError } from "@/lib/api-client";
-import type { RoomReportDTO, FaultTypeDTO, ReportEstado } from "@/types/api";
+import type { RoomReportDTO, FaultTypeDTO } from "@/types/api";
+import {
+  IconReportes,
+  IconFilter,
+  IconSupport,
+  IconHistory,
+  IconCheck,
+  IconAlert,
+} from "@/components/visual-icons";
 
 const ESTADOS_OPCIONES: Array<{ value: string; label: string }> = [
   { value: "", label: "Todos los estados" },
@@ -22,6 +31,7 @@ export default function ReportsPage() {
   const [filterEstado, setFilterEstado] = useState("");
   const [filterPeriodo, setFilterPeriodo] = useState("");
   const [filterMine, setFilterMine] = useState(false);
+  const visual = useVisualTheme();
 
   // Generar URL con filtros
   const queryUrl = useMemo(() => {
@@ -101,114 +111,133 @@ export default function ReportsPage() {
   const reports = reportsResource.data ?? [];
 
   return (
-    <>
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Reportes de fallas en aulas</h1>
-        <p className="text-gray-600 mt-1">
+    <div className="reports-view flex flex-col gap-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          Reportes de fallas en aulas
+        </h1>
+        <p className="text-sm text-muted mt-1 max-w-2xl">
           Consulta y apoya reportes de fallas físicas y técnicas en las aulas.
           Los reportes se originan desde la clase correspondiente en tu{" "}
-          <Link href="/horario" className="text-blue-600 underline">
+          <Link
+            href={appendVisualParams("/horario", visual)}
+            className="text-blue-600 underline font-semibold"
+          >
             Horario
           </Link>
           .
         </p>
-      </header>
+      </div>
 
       {/* Barra de filtros */}
-      <section aria-labelledby="filtros-heading" className="controls mb-6">
+      <section
+        aria-labelledby="filtros-heading"
+        className="visual-filter-toolbar"
+      >
         <h2 id="filtros-heading" className="sr-only">
           Filtros de búsqueda
         </h2>
-        <div className="flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col text-sm font-medium">
-            Salón:
-            <input
-              type="text"
-              placeholder="Ej. A-12, Lab 3"
-              value={filterSalon}
-              onChange={(e) => setFilterSalon(e.target.value)}
-              className="mt-1"
-            />
-          </label>
 
-          <label className="flex flex-col text-sm font-medium">
-            Tipo de falla:
-            <select
-              value={filterTipoId}
-              onChange={(e) => setFilterTipoId(e.target.value)}
-              className="mt-1"
-            >
-              <option value="">Todos los tipos</option>
-              {typesResource.data?.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label className="flex-1 min-w-[150px]">
+          <span>Salón:</span>
+          <input
+            type="text"
+            placeholder="Ej. A-12, Lab 3"
+            value={filterSalon}
+            onChange={(e) => setFilterSalon(e.target.value)}
+          />
+        </label>
 
-          <label className="flex flex-col text-sm font-medium">
-            Estado:
-            <select
-              value={filterEstado}
-              onChange={(e) => setFilterEstado(e.target.value)}
-              className="mt-1"
-            >
-              {ESTADOS_OPCIONES.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label className="min-w-[180px]">
+          <span>Tipo de falla:</span>
+          <select
+            value={filterTipoId}
+            onChange={(e) => setFilterTipoId(e.target.value)}
+          >
+            <option value="">Todos los tipos</option>
+            {typesResource.data?.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <label className="flex flex-col text-sm font-medium">
-            Periodo:
-            <input
-              type="text"
-              placeholder="Ej. Ago-Dic 2026"
-              value={filterPeriodo}
-              onChange={(e) => setFilterPeriodo(e.target.value)}
-              className="mt-1"
-            />
-          </label>
+        <label className="min-w-[160px]">
+          <span>Estado:</span>
+          <select
+            value={filterEstado}
+            onChange={(e) => setFilterEstado(e.target.value)}
+          >
+            {ESTADOS_OPCIONES.map((op) => (
+              <option key={op.value} value={op.value}>
+                {op.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <label className="flex items-center gap-2 text-sm font-medium cursor-pointer pb-2">
-            <input
-              type="checkbox"
-              checked={filterMine}
-              onChange={(e) => setFilterMine(e.target.checked)}
-              className="h-4 w-4"
-            />
+        <label className="min-w-[160px]">
+          <span>Periodo:</span>
+          <input
+            type="text"
+            placeholder="Ej. Ago-Dic 2026"
+            value={filterPeriodo}
+            onChange={(e) => setFilterPeriodo(e.target.value)}
+          />
+        </label>
+
+        <div className="flex items-center gap-2 pb-2 min-h-[44px]">
+          <input
+            id="filter-mine-check"
+            type="checkbox"
+            checked={filterMine}
+            onChange={(e) => setFilterMine(e.target.checked)}
+            className="h-4 w-4 cursor-pointer"
+          />
+          <label
+            htmlFor="filter-mine-check"
+            className="cursor-pointer font-semibold text-sm select-none"
+          >
             Solo mis reportes
           </label>
-
-          <button
-            type="button"
-            onClick={() => {
-              setFilterSalon("");
-              setFilterTipoId("");
-              setFilterEstado("");
-              setFilterPeriodo("");
-              setFilterMine(false);
-            }}
-            className="self-end"
-          >
-            Limpiar filtros
-          </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setFilterSalon("");
+            setFilterTipoId("");
+            setFilterEstado("");
+            setFilterPeriodo("");
+            setFilterMine(false);
+          }}
+          className="btn-secondary self-end"
+        >
+          <IconFilter size={16} />
+          <span>Limpiar filtros</span>
+        </button>
       </section>
 
       {/* Avisos de acción */}
       {actionSuccess && (
-        <p role="status" className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded">
-          {actionSuccess}
-        </p>
+        <div
+          role="status"
+          className="notice-box notice-success"
+        >
+          <IconCheck size={18} className="text-green-600" />
+          <span>{actionSuccess}</span>
+        </div>
       )}
       {actionError && (
-        <p role="alert" className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded">
-          {actionError}
-        </p>
+        <div
+          role="alert"
+          className="notice-box notice-error"
+        >
+          <IconAlert size={18} className="text-red-600" />
+          <span>{actionError}</span>
+        </div>
       )}
 
       {/* Lista de reportes */}
@@ -218,18 +247,23 @@ export default function ReportsPage() {
           void reportsResource.refresh();
         }}
       >
-        <div className="mb-2 text-sm text-gray-600">
-          Mostrando {reports.length} {reports.length === 1 ? "reporte" : "reportes"}.
+        <div className="text-sm text-muted font-semibold">
+          <p role="status">
+            Mostrando {reports.length} {reports.length === 1 ? "reporte" : "reportes"}.
+          </p>
         </div>
 
         {reports.length === 0 ? (
-          <div className="p-8 text-center border border-dashed border-gray-300 rounded">
-            <p className="text-gray-500">
+          <div className="visual-card p-8 text-center text-muted">
+            <p className="font-semibold">
               No se encontraron reportes con los criterios seleccionados.
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-xs mt-2">
               Si detectas un desperfecto en tu aula, repórtalo directamente desde tu{" "}
-              <Link href="/horario" className="text-blue-600 underline">
+              <Link
+                href={appendVisualParams("/horario", visual)}
+                className="text-blue-600 underline font-semibold"
+              >
                 horario de clases
               </Link>
               .
@@ -244,19 +278,18 @@ export default function ReportsPage() {
               const isLoading = loadingActionId === report.id;
 
               return (
-                <li
-                  key={report.id}
-                  className="border border-gray-200 rounded p-4 bg-white shadow-sm"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2 border-b border-gray-100 pb-3">
+                <li key={report.id} className="visual-card p-5 flex flex-col gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--surface-border)] pb-3">
                     <div>
-                      <span className="text-lg font-bold">
-                        Aula {report.salon}
-                      </span>
-                      <span className="ml-3 inline-block px-2 py-0.5 text-xs font-semibold rounded bg-gray-100 text-gray-800">
-                        {report.tipo_nombre}
-                      </span>
-                      <div className="text-sm text-gray-600 mt-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-black tracking-tight">
+                          Aula {report.salon}
+                        </span>
+                        <span className="text-xs px-2.5 py-0.5 rounded font-bold bg-[var(--surface-secondary)] border border-[var(--surface-border)]">
+                          {report.tipo_nombre}
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted mt-1">
                         <span>{report.nombre_materia}</span> ({report.clave_materia}) •{" "}
                         <span className="capitalize">{report.dia}</span> {report.hora_inicio} - {report.hora_fin} •{" "}
                         <span>{report.periodo}</span>
@@ -264,45 +297,34 @@ export default function ReportsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-block px-2.5 py-1 text-xs font-bold uppercase rounded ${
-                          report.estado === "resuelto"
-                            ? "bg-green-100 text-green-800"
-                            : report.estado === "en_revision"
-                            ? "bg-blue-100 text-blue-800"
-                            : report.estado === "recibido"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : report.estado === "descartado"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
+                      <span className={`report-status report-status-${report.estado}`}>
                         {report.estado.replace("_", " ")}
                       </span>
                       {report.prioridad && (
-                        <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-purple-50 text-purple-700 border border-purple-200">
+                        <span className="text-xs px-2 py-0.5 rounded font-bold bg-purple-100 text-purple-800">
                           Prioridad: {report.prioridad}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <p className="mt-3 text-gray-800 whitespace-pre-line">
+                  <p className="text-sm text-main whitespace-pre-line m-0">
                     {report.descripcion}
                   </p>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted pt-3 border-t border-[var(--surface-border)]">
+                    <div className="flex flex-wrap items-center gap-3">
                       <span>
                         Reportado: {new Date(report.creado_en).toLocaleString("es-MX")}
                       </span>
+                      <span>•</span>
                       <span>
                         <strong>{report.apoyos_conteo}</strong>{" "}
                         {report.apoyos_conteo === 1 ? "alumno afectado" : "alumnos afectados"}
                       </span>
                       {report.es_mio && (
-                        <span className="text-blue-700 font-semibold">
-                          (Tu reporte)
+                        <span className="text-blue-700 font-bold px-2 py-0.5 rounded bg-blue-50">
+                          Tu reporte
                         </span>
                       )}
                     </div>
@@ -310,27 +332,25 @@ export default function ReportsPage() {
                     <div className="flex items-center gap-2">
                       {/* Botón de apoyo */}
                       {report.lo_apoye ? (
-                        <span className="text-green-700 font-semibold px-2 py-1">
-                          ✓ Apoyado
+                        <span className="text-green-700 font-bold flex items-center gap-1">
+                          <IconCheck size={14} />
+                          <span>Apoyado</span>
                         </span>
                       ) : report.es_mio ? (
-                        <span className="text-gray-400 px-2 py-1">
-                          Autor
-                        </span>
+                        <span className="text-muted italic">Autor</span>
                       ) : isOpen ? (
                         <button
                           type="button"
                           onClick={() => handleConfirm(report.id)}
                           disabled={isLoading}
                           aria-label={`Apoyar reporte de falla en aula ${report.salon}`}
-                          className="text-xs"
+                          className="btn-secondary text-xs"
                         >
-                          {isLoading ? "Registrando..." : "También me pasa"}
+                          <IconSupport size={14} />
+                          <span>{isLoading ? "Registrando..." : "También me pasa"}</span>
                         </button>
                       ) : (
-                        <span className="text-gray-400 px-2 py-1">
-                          Reporte cerrado
-                        </span>
+                        <span className="text-muted italic">Cerrado</span>
                       )}
 
                       {/* Botón retirar propio reporte si está en 'recibido' */}
@@ -339,7 +359,7 @@ export default function ReportsPage() {
                           type="button"
                           onClick={() => handleWithdraw(report.id)}
                           disabled={isLoading}
-                          className="text-xs text-red-600 hover:text-red-800"
+                          className="btn-secondary text-xs text-red-600 hover:text-red-800"
                           aria-label={`Retirar tu reporte en aula ${report.salon}`}
                         >
                           Retirar
@@ -351,9 +371,14 @@ export default function ReportsPage() {
                         <button
                           type="button"
                           onClick={() => toggleHistory(report.id)}
-                          className="text-xs text-gray-700"
+                          className="btn-secondary text-xs"
                         >
-                          {isExpanded ? "Ocultar historial" : `Historial (${report.historial.length})`}
+                          <IconHistory size={14} />
+                          <span>
+                            {isExpanded
+                              ? "Ocultar historial"
+                              : `Historial (${report.historial.length})`}
+                          </span>
                         </button>
                       )}
                     </div>
@@ -361,14 +386,14 @@ export default function ReportsPage() {
 
                   {/* Panel expandible de historial */}
                   {isExpanded && report.historial && report.historial.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 bg-gray-50 p-3 rounded">
-                      <h3 className="text-xs font-bold uppercase text-gray-700 mb-2">
+                    <div className="mt-3 p-3 bg-[var(--surface-secondary)] border border-[var(--surface-border)] rounded text-xs flex flex-col gap-2">
+                      <span className="font-bold uppercase tracking-wider text-muted">
                         Historial de seguimiento
-                      </h3>
-                      <ol className="list-decimal list-inside space-y-2 text-xs text-gray-700">
+                      </span>
+                      <ol className="list-decimal list-inside space-y-1.5 p-0 m-0 text-muted">
                         {report.historial.map((ev) => (
                           <li key={ev.id}>
-                            <span className="font-semibold">
+                            <span className="font-semibold text-main">
                               {new Date(ev.creado_en).toLocaleString("es-MX")}
                             </span>
                             : Cambiado a <strong>{ev.estado_nuevo}</strong>
@@ -387,6 +412,6 @@ export default function ReportsPage() {
           </ul>
         )}
       </ResourceState>
-    </>
+    </div>
   );
 }
