@@ -52,12 +52,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
 
+  // Generación lógica de solicitudes: cada nueva petición o invalidación la
+  // incrementa, permitiendo descartar respuestas de peticiones ya obsoletas
+  // aunque no hayan sido abortadas (por ejemplo, si llegaron tarde).
   const requestGeneration = useRef(0);
+  // Controlador de la última petición en curso; se aborta al iniciar otra o al
+  // invalidar la sesión para evitar que respuestas viejas sobrescriban el estado.
   const requestController = useRef<AbortController | null>(null);
+  // Evita solapamientos entre login/logout (operaciones que mutan la sesión).
   const isMutating = useRef(false);
+  // Evita refresh concurrentes entre sí.
   const isRefreshing = useRef(false);
+  // Almacena el id del estudiante activo para detectar cambios de identidad.
   const activeStudentId = useRef<string | null>(null);
+  // Expiración absoluta de la sesión (en segundos, tal como la entrega el backend).
   const sessionExpiresAt = useRef<number | null>(null);
+  // Temporizador encargado de invalidar la sesión automáticamente al expirar.
   const expirationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cancelPendingRequest = useCallback(() => {
@@ -71,6 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const invalidateSession = useCallback(() => {
+    // Avanza la época global del cliente API para descartar respuestas iniciadas
+    // antes de invalidar esta sesión.
     requestGeneration.current++;
     advanceApiEpoch();
     requestController.current?.abort();
@@ -83,7 +95,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearExpirationTimer]);
 
   const beginRequest = useCallback((newSession = false) => {
+    // Al iniciar una nueva petición se incrementa la generación y se aborta la
+    // anterior; así solo la última petición podrá aplicar su resultado.
     requestGeneration.current++;
+    // Un login abre una nueva sesión y hace que el cliente API descarte respuestas
+    // iniciadas bajo la sesión anterior.
     if (newSession) advanceApiEpoch();
 
     requestController.current?.abort();
@@ -98,6 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const acceptSession = useCallback(
     (profile: StudentProfileDTO, expiration: number) => {
+      // Validación defensiva: perfil con identificador, expiración numérica y
+      // todavía vigente; se compara en milisegundos contra el reloj local.
       if (
         !profile?.numero_control ||
         !Number.isFinite(expiration) ||
@@ -110,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
       }
 
+      // Si cambia el estudiante activo, las respuestas pendientes de la sesión
+      // anterior dejan de ser válidas para el cliente API.
       if (
         activeStudentId.current !== null &&
         activeStudentId.current !== profile.numero_control
@@ -123,6 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setStudent(profile);
       setStatus("authenticated");
       setMessage(null);
+      // El límite de 24 h acorta la espera si el backend entrega una expiración
+      // más lejana; cuando vence este temporizador se invalida la sesión local.
       expirationTimer.current = setTimeout(
         invalidateSession,
         Math.min(expiration * 1000 - Date.now(), 86400000),
@@ -132,6 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const refresh = useCallback(async () => {
+    // Revalidación silenciosa: se omite si hay una operación que muta la sesión
+    // en curso o si ya hay un refresh pendiente (evita condiciones de carrera).
     if (isMutating.current || isRefreshing.current) return;
 
     isRefreshing.current = true;
@@ -142,6 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signal: request.signal,
       });
 
+      // Solo se aplica la respuesta si sigue siendo la petición vigente; esto
+      // descarta resultados de peticiones abortadas o superadas por otra.
       if (requestGeneration.current === request.id) {
         if (!data.authenticated) {
           throw new ApiClientError("Sesión no válida", 401);
@@ -150,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         acceptSession(data.student, data.expiresAt);
       }
     } catch (error) {
+      // Si fue abortada o ya no es la petición vigente, se ignora sin tocar estado.
       if (request.signal.aborted || requestGeneration.current !== request.id) {
         return;
       }
@@ -158,6 +185,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionExpiresAt.current = null;
       setStudent(null);
 
+      // Un 401 se trata como sesión definitivamente inválida (limpia todo);
+      // otros errores se exponen como estado "error" conservando el mensaje.
       if (error instanceof ApiClientError && error.status === 401) {
         invalidateSession();
       } else {
@@ -180,9 +209,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
+      // Un login concurrente con otro login/logout se descarta.
       if (isMutating.current) return;
 
       isMutating.current = true;
+      // Login inicia una nueva sesión: se avanza la época del API.
       const request = beginRequest(true);
       setMessage(null);
 
@@ -193,10 +224,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           signal: request.signal,
         });
 
+        // Tras el login se consulta la sesión para obtener el perfil y la
+        // expiración canónicos desde el backend (no se confía en el login).
         const data = await apiRequest<SessionData>("/api/auth/session", {
           signal: request.signal,
         });
 
+        // Se verifica generación y aborto antes de aplicar el resultado para
+        // evitar redirecciones o estados de una petición ya superada.
         if (requestGeneration.current === request.id && !request.signal.aborted) {
           if (!data.authenticated) {
             throw new ApiClientError("Sesión no válida", 401);
@@ -206,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           router.replace("/dashboard");
         }
       } catch (error) {
+        // Solo se publica el mensaje si esta sigue siendo la petición vigente.
         if (requestGeneration.current === request.id) {
           setMessage(
             error instanceof ApiClientError
@@ -234,6 +270,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signal: request.signal,
       });
 
+      // Solo se limpia el estado local y se redirige si la petición es vigente;
+      // si otra operación la superó, se deja que esa determine el nuevo estado.
       if (requestGeneration.current === request.id) {
         invalidateSession();
         router.replace("/login");
@@ -254,8 +292,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [beginRequest, invalidateSession, router]);
 
   useEffect(() => {
+    // Evento global emitido por el cliente API ante un 401; invalida la sesión
+    // de forma centralizada sin que cada componente deba manejarlo.
     const handleUnauthorized = () => invalidateSession();
 
+    // Revalidación bajo demanda: al volver a la pestaña o recibir foco se
+    // comprueba primero la expiración local (barato) y, si sigue vigente, se
+    // consulta al backend para confirmar que la sesión sigue activa.
     const revalidateWhenActive = () => {
       if (document.visibilityState !== "visible" || isMutating.current) return;
 
@@ -273,12 +316,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.addEventListener("visibilitychange", revalidateWhenActive);
     window.addEventListener("focus", revalidateWhenActive);
 
+    // Inicia la verificación inicial en el siguiente turno del event loop.
     const initialRefresh = setTimeout(() => {
       void refresh();
     }, 0);
 
     return () => {
       clearTimeout(initialRefresh);
+      // Limpieza: aborta peticiones en curso y libera el temporizador de
+      // expiración, además de remover los listeners globales.
       cancelPendingRequest();
       clearExpirationTimer();
       window.removeEventListener("sii:unauthorized", handleUnauthorized);
