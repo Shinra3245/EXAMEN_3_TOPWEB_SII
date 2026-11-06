@@ -642,3 +642,30 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.
   overflow-wrap: anywhere;
   line-height: 1.25;
 }
+
+/* Hover de opciones: el contraste se invierte junto con el fondo (claro→texto oscuro, oscuro→texto claro). */
+@supports (appearance: base-select) {
+  [data-visual-shell][data-visual-style="pixelretro"][data-visual-theme="claro"] select option:not(:checked):is(:hover, :focus-visible),
+  dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme="claro"] select option:not(:checked):is(:hover, :focus-visible) {
+    background: #e6defa;
+    color: #2a0b53;
+    border-color: #6848c2;
+  }
+  [data-visual-shell][data-visual-style="pixelretro"][data-visual-theme="oscuro"] select option:not(:checked):is(:hover, :focus-visible),
+  dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme="oscuro"] select option:not(:checked):is(:hover, :focus-visible) {
+    background: #3a2a78;
+    color: #ffffff;
+    border-color: #a07cff;
+  }
+  /* La opción elegida mantiene su contraste también bajo el cursor. */
+  [data-visual-shell][data-visual-style="pixelretro"][data-visual-theme] select option:checked:is(:hover, :focus-visible),
+  dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] select option:checked:is(:hover, :focus-visible) {
+    background: var(--brand-primary);
+    color: var(--brand-contrast);
+  }
+  [data-visual-shell][data-visual-style="pixelretro"] select::picker(select),
+  dialog[data-visual-modal][data-visual-style="pixelretro"] select::picker(select) {
+    scrollbar-color: var(--brand-primary) transparent;
+    scrollbar-width: thin;
+  }
+}
