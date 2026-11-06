@@ -1,4 +1,5 @@
 import "server-only";
+import { enforceLoginRateLimit } from "@/lib/rate-limit";
 import {
   validateSameOrigin,
   buildSessionCookieHeader,
@@ -91,6 +92,9 @@ export async function handleLogin(req: Request): Promise<Response> {
         "Correo institucional y contraseña son requeridos"
       );
     }
+
+    // Límite de intentos por IP y por cuenta, antes de contactar al SII.
+    await enforceLoginRateLimit(req, email);
 
     // 4. Autenticar upstream contra SII (preservando contraseña literal)
     const { token } = await authenticateSii(email.trim(), password);

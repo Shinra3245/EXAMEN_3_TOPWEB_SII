@@ -90,6 +90,11 @@ Preparación del entorno: aplicar `database/migrations/0004_room_reports.sql` co
 
 La regresión `database/tests/room_reports.sql` se ejecuta mediante `psql` en una base de pruebas con las migraciones aplicadas. Utiliza únicamente fixtures sintéticos y termina con rollback. No ejecutarla contra producción.
 
+## Endurecimiento de seguridad
+
+- **Cabeceras globales** (`src/lib/security-headers.ts`, aplicadas en `src/worker.ts` a toda respuesta): `Content-Security-Policy` (incluye `frame-ancestors 'none'`), `X-Frame-Options: DENY`, `Strict-Transport-Security` (solo HTTPS), `X-Content-Type-Options: nosniff`, `Referrer-Policy` y `Permissions-Policy`. No sustituyen las que una ruta ya defina, como la CSP de la foto. La política conserva `'unsafe-inline'` porque Next.js inserta código en línea para hidratar.
+- **Límite de intentos de login** (`src/lib/rate-limit.ts`): 10 por minuto por IP y 5 por minuto por cuenta, evaluados antes de contactar al SII; responde `429` con `Retry-After`. Usa el binding de Cloudflare Rate Limiting (`ratelimits` en `wrangler.jsonc`) y, sin binding (desarrollo y pruebas), un contador en memoria. El limitador recibe la huella SHA-256 del correo, no el correo.
+
 ## Cloudflare y CI
 
 `wrangler.jsonc` declara únicamente Worker y assets estáticos; no solicita KV, R2, Durable Objects ni optimización de imágenes. La aplicación usa `nodejs_compat`. Las cuotas y el consumo real se deben revisar antes de considerar validado el uso en Free: [límites oficiales de Workers](https://developers.cloudflare.com/workers/platform/limits/).

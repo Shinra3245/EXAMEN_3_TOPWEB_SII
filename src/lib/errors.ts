@@ -8,7 +8,8 @@ export class AppError extends Error {
     statusCode: number,
     errorCode: string,
     message: string,
-    isPublic = true
+    isPublic = true,
+    public readonly headers: Record<string, string> = {}
   ) {
     super(message);
     this.name = "AppError";
@@ -110,6 +111,7 @@ export function toSafeErrorResponse(
         status: error.statusCode,
         headers: {
           "Cache-Control": "no-store, no-cache, must-revalidate",
+          ...error.headers,
         },
       }
     );
