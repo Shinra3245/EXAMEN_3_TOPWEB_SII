@@ -4,6 +4,36 @@ Backend Next.js 16.4.5, React 19.3.1 y TypeScript para Cloudflare Workers median
 
 Piloto técnico: https://examen3-sii.shinra3245.workers.dev
 
+## Arquitectura
+
+```
+┌────────────────────┐
+│     NAVEGADOR      │   Pantallas: login, dashboard, calificaciones,
+│  (React + Next.js) │   kardex, horario, reportes, admin
+└─────────┬──────────┘
+          │  petición + cookie sii_session (cifrada)
+          ▼
+┌──────────────────────────────────────────────────┐
+│        CLOUDFLARE WORKER (backend propio)        │
+│                                                  │
+│   worker.ts ─► ¿/api?  ─► router.ts ─► handler   │
+│                  │                               │
+│                  └─ no ─► Next.js (las páginas)  │
+│                                                  │
+│   Aquí se cifra y descifra la sesión (AES-GCM)   │
+└─────────┬─────────────────────────┬──────────────┘
+          │ Bearer + JWT            │ Hyperdrive
+          ▼                         ▼
+┌────────────────────┐    ┌──────────────────────┐
+│    API DEL SII     │    │  SUPABASE (Postgres) │
+│ emite el JWT y     │    │ solo lo propio:      │
+│ tiene los datos    │    │ reportes de aulas y  │
+│ académicos         │    │ contadores de login  │
+└────────────────────┘    └──────────────────────┘
+```
+
+El navegador solo habla con el Worker. El token del SII nunca llega al navegador: vive cifrado dentro de la cookie `sii_session`. Los datos académicos se consultan al SII en cada visita y no se almacenan; la base solo guarda los reportes de aulas y los contadores de intentos de login.
+
 ## Desarrollo
 
 Se requiere Node.js 24 (CI usa 24.16.0). Instalar el lockfile con `npm ci`. Copiar `.env.example` a `.env.local` y configurar una clave `SESSION_SECRET` aleatoria de 32 bytes (64 caracteres hexadecimales). No utilizar claves de ejemplo ni reutilizar claves entre entornos. Para la vista previa de Wrangler, proporcionar las mismas variables de desarrollo mediante `.dev.vars`, siempre fuera de Git.
