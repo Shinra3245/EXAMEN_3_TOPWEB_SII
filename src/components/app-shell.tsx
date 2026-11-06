@@ -13,6 +13,7 @@ import {
 } from "@/components/visual-theme";
 import "@/styles/visual-comparison.css";
 import "@/styles/pixel-polish.css";
+import { PixelSelectEnhancer } from "@/components/pixel-select-enhancer";
 import {
   IconHome,
   IconCalificaciones,
@@ -301,6 +302,7 @@ export function AppShell({ children }: AppShellProps) {
   // 4. Estado Authenticated: renderizar AppShell con navegación y children
   return (
     <div {...shellProps}>
+      <PixelSelectEnhancer />
       <a href="#main-content" className="skip-link">
         Saltar al contenido principal
       </a>
