@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore, useEffect } from "react";
+import { flushSync } from "react-dom";
 
 export type VisualStyle = "pixelretro" | "mosaico" | "ilustracion";
 export type VisualTheme = "claro" | "oscuro";
@@ -103,6 +104,22 @@ export function syncVisualState(): boolean {
  */
 export function setVisualTheme(theme: VisualTheme): void {
   if (currentState.theme === theme) return;
+  // Fundido entre temas cuando el navegador lo soporta y el usuario no pidió menos movimiento.
+  if (typeof document !== "undefined" && typeof window !== "undefined") {
+    const doc = document as Document & {
+      startViewTransition?: (update: () => void) => unknown;
+    };
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (doc.startViewTransition && !reduceMotion) {
+      // flushSync: el DOM debe actualizarse dentro del callback para capturar el estado nuevo.
+      doc.startViewTransition(() => flushSync(() => applyVisualTheme(theme)));
+      return;
+    }
+  }
+  applyVisualTheme(theme);
+}
+
+function applyVisualTheme(theme: VisualTheme): void {
   currentState = { ...currentState, theme };
   if (typeof window !== "undefined") {
     try {

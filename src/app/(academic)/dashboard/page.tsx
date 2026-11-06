@@ -38,6 +38,18 @@ interface Kpi {
   percent?: boolean;
 }
 
+/**
+ * Presentación de indicadores: los decimales largos del SII (85.1063829…) se
+ * muestran con 2 decimales; el valor exacto queda disponible en `title`.
+ */
+function formatKpi(raw: unknown): string {
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (typeof raw === "boolean" || !Number.isFinite(n)) return String(raw);
+  return Number.isInteger(n)
+    ? String(n)
+    : n.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 /** Ancho relativo de una barra respecto de la mayor del par; nunca inventa 0. */
 function sharedScaleWidth(count: number, max: number): string {
   if (count <= 0 || max <= 0) return "0%";
@@ -213,8 +225,11 @@ export default function DashboardPage() {
                           <Icon size={40} />
                         </span>
                         <span className="kpi-label">{kpi.label}</span>
-                        <span className="kpi-value">
-                          {has ? `${raw}${kpi.percent ? "%" : ""}` : "N/D"}
+                        <span
+                          className="kpi-value"
+                          title={has ? `Valor oficial: ${String(raw)}` : undefined}
+                        >
+                          {has ? `${formatKpi(raw)}${kpi.percent ? "%" : ""}` : "N/D"}
                         </span>
                       </li>
                     );

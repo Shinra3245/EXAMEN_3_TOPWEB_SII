@@ -1,0 +1,292 @@
+/* ==========================================================================
+   Pulido pixel retro: legibilidad, controles, estados y movimiento.
+   Se carga después de visual-comparison.css y solo afecta al estilo pixelretro.
+   ========================================================================== */
+
+/* --- Tokens de legibilidad y movimiento --------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"],
+dialog[data-visual-modal][data-visual-style="pixelretro"] {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-med: 220ms;
+  --dur-slow: 360ms;
+  --press-shift: 2px;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"][data-visual-theme="claro"],
+dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme="claro"] {
+  /* Texto secundario más oscuro: ≥ 7:1 sobre el fondo nube y blanco. */
+  --text-muted: #34506a;
+  --text-subtle: #3d5b73;
+  --row-hover: #fff1e4;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' shape-rendering='crispEdges'%3E%3Cpath fill='%232a0b53' d='M0 0h14v2H0zM2 2h10v2H2zM4 4h6v2H4zM6 6h2v2H6z'/%3E%3C/svg%3E");
+}
+
+[data-visual-shell][data-visual-style="pixelretro"][data-visual-theme="oscuro"],
+dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme="oscuro"] {
+  --text-muted: #c9d6ee;
+  --text-subtle: #b8c7e3;
+  --row-hover: #2d2152;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffb27a' d='M0 0h14v2H0zM2 2h10v2H2zM4 4h6v2H4zM6 6h2v2H6z'/%3E%3C/svg%3E");
+}
+
+/* --- Transición suave entre temas --------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"],
+[data-visual-shell][data-visual-style="pixelretro"] :is(
+  .visual-card, .kpi, .visual-sidebar, .visual-nav-item, .table-scroll,
+  th, td, input, select, textarea, button, .visual-logout-btn
+) {
+  transition-property: background-color, color, border-color, box-shadow, transform;
+  transition-duration: var(--dur-med);
+  transition-timing-function: var(--ease-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Entrada de cada vista ---------------------------------------------- */
+@keyframes vs-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .visual-page-content > * {
+  animation: vs-page-enter var(--dur-slow) var(--ease-out) both;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .visual-page-content > *:nth-child(2) { animation-delay: 40ms; }
+[data-visual-shell][data-visual-style="pixelretro"] .visual-page-content > *:nth-child(3) { animation-delay: 80ms; }
+[data-visual-shell][data-visual-style="pixelretro"] .visual-page-content > *:nth-child(n + 4) { animation-delay: 120ms; }
+
+/* --- Botones: efecto de tecla pixel (sube al pasar, se hunde al pulsar) -- */
+[data-visual-shell][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary, .visual-logout-btn),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary) {
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--surface-border);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary, .visual-logout-btn):hover:not(:disabled),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary):hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--surface-border);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary, .visual-logout-btn):active:not(:disabled),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(button, .btn-primary, .btn-secondary):active:not(:disabled) {
+  transform: translate(var(--press-shift), var(--press-shift));
+  box-shadow: 0 0 0 var(--surface-border);
+  transition-duration: 60ms;
+}
+
+/* Hover que conserva el contraste (antes: fondo claro con texto blanco). */
+[data-visual-shell][data-visual-style="pixelretro"] .btn-secondary:hover:not(:disabled),
+[data-visual-shell][data-visual-style="pixelretro"] button:not([type="submit"]):not(.btn-primary):not(.visual-logout-btn):not(.visual-mobile-toggle):hover:not(:disabled),
+dialog[data-visual-modal][data-visual-style="pixelretro"] .btn-secondary:hover:not(:disabled),
+dialog[data-visual-modal][data-visual-style="pixelretro"] button:not([type="submit"]):not(.btn-primary):hover:not(:disabled) {
+  background: var(--brand-hover);
+  color: var(--brand-contrast);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(.btn-primary, button[type="submit"]):hover:not(:disabled),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(.btn-primary, button[type="submit"]):hover:not(:disabled) {
+  background: #ff8c4a;
+  color: var(--chip-yellow-fg);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] button:disabled,
+dialog[data-visual-modal][data-visual-style="pixelretro"] button:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Iconos dentro de botones: pequeño empuje al pasar. */
+[data-visual-shell][data-visual-style="pixelretro"] :is(button, .visual-logout-btn) svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(button, .visual-logout-btn):hover:not(:disabled) svg {
+  transform: scale(1.12);
+}
+
+/* --- Foco visible y consistente ----------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"] :is(a, button, input, select, textarea, [tabindex]):focus-visible,
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* --- Campos ------------------------------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"] :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 44px;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: inset 2px 2px 0 rgb(42 11 83 / 10%);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(input, select, textarea):hover:not(:disabled):not(:focus),
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(input, select, textarea):hover:not(:disabled):not(:focus) {
+  border-color: var(--brand-primary);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(input, select, textarea):focus,
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(input, select, textarea):focus {
+  border-color: var(--brand-primary);
+  box-shadow: 3px 3px 0 var(--focus-ring);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(input, textarea)::placeholder,
+dialog[data-visual-modal][data-visual-style="pixelretro"] :is(input, textarea)::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+/* Select con flecha pixel propia en lugar del control nativo. */
+[data-visual-shell][data-visual-style="pixelretro"] select,
+dialog[data-visual-modal][data-visual-style="pixelretro"] select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 14px 10px;
+  cursor: pointer;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] select option,
+dialog[data-visual-modal][data-visual-style="pixelretro"] select option {
+  background-color: var(--surface-bg);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] select option:checked,
+dialog[data-visual-modal][data-visual-style="pixelretro"] select option:checked {
+  background-color: var(--brand-primary);
+  color: var(--brand-contrast);
+}
+
+/* --- Tablas ------------------------------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll :is(th, td) {
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td :is(.text-xs, small) {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td {
+  font-variant-numeric: tabular-nums;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll tbody tr:hover :is(th, td) {
+  background-color: var(--row-hover);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* --- Tarjetas e indicadores --------------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"] .kpi {
+  transition: transform var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .kpi:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--surface-border);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .kpi .kpi-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .kpi .kpi-icon svg {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .kpi:hover .kpi-icon svg {
+  transform: rotate(-6deg) scale(1.08);
+}
+
+/* Barras de progreso: llenado animado al aparecer. */
+@keyframes vs-bar-fill {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(.dash-progress-fill, .dash-results-bar) {
+  animation: vs-bar-fill 700ms var(--ease-out) 120ms both;
+}
+
+/* --- Navegación --------------------------------------------------------- */
+[data-visual-shell][data-visual-style="pixelretro"] .visual-nav-item {
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-med) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .visual-nav-item:hover:not(.is-active) {
+  transform: translateY(-2px);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .visual-nav-item .visual-nav-icon svg {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .visual-nav-item:hover .visual-nav-icon svg {
+  transform: translateY(-1px) scale(1.1);
+}
+
+/* --- Estados de carga y error ------------------------------------------- */
+@keyframes vs-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] .resource-state-loading {
+  animation: vs-blink 1.2s steps(2, end) infinite;
+}
+
+/* --- Modal -------------------------------------------------------------- */
+@keyframes vs-modal-in {
+  from { opacity: 0; transform: translate(6px, 10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+dialog[data-visual-modal][data-visual-style="pixelretro"][open] .modal-dialog-panel,
+[data-visual-shell][data-visual-style="pixelretro"] .modal-dialog-panel {
+  animation: vs-modal-in var(--dur-med) var(--ease-out) both;
+}
+
+/* --- Movimiento reducido ------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  [data-visual-shell][data-visual-style="pixelretro"] *,
+  [data-visual-shell][data-visual-style="pixelretro"] *::before,
+  [data-visual-shell][data-visual-style="pixelretro"] *::after,
+  dialog[data-visual-modal][data-visual-style="pixelretro"] * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+
+  [data-visual-shell][data-visual-style="pixelretro"] :is(button, .kpi, .visual-nav-item):hover {
+    transform: none !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

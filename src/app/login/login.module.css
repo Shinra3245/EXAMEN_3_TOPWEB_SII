@@ -5,7 +5,12 @@
   --login-muted: var(--pixel-muted);
   --login-blue: var(--pixel-blue);
   --login-yellow: var(--pixel-yellow);
-  --login-border: var(--pixel-control-border);
+  --login-border: #2a0b53;
+  --login-purple: #6848c2;
+  --login-purple-hover: #583bb3;
+  --login-orange: #ff7a30;
+  --login-orange-hover: #ff8c4a;
+  --login-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   min-height: 100svh;
   overflow: hidden;
@@ -50,10 +55,16 @@
 .loginCard {
   min-width: 0;
   padding: clamp(24px, 4vw, 36px);
-  border: 1px solid var(--login-border);
-  border-radius: 18px;
+  border: 3px solid var(--login-border);
+  border-radius: 0;
   background: var(--login-surface);
-  box-shadow: 0 12px 36px rgb(32 83 115 / 12%);
+  box-shadow: 8px 8px 0 var(--login-border);
+  animation: cardEnter 420ms var(--login-ease) both;
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translate(-6px, 14px); box-shadow: 0 0 0 var(--login-border); }
+  to { opacity: 1; transform: none; box-shadow: 8px 8px 0 var(--login-border); }
 }
 
 .loginHeader {
@@ -62,18 +73,24 @@
 }
 
 .eyebrow {
-  margin: 0 0 12px;
-  color: #9b6800;
-  font-size: 16px;
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 4px 10px;
+  border: 2px solid var(--login-border);
+  background: var(--login-purple);
+  color: #ffffff;
+  font-size: 15px;
   letter-spacing: 0.06em;
 }
 
 .loginHeader h1 {
   margin: 0;
+  color: var(--login-orange);
   font-family: var(--font-pixel-display), monospace;
-  font-size: clamp(14px, 2vw, 18px);
+  font-size: clamp(16px, 2.4vw, 22px);
   font-weight: 400;
   line-height: 1.6;
+  text-shadow: 2px 2px 0 var(--login-border);
 }
 
 .loginHeader > p:last-child {
@@ -103,8 +120,9 @@
 }
 
 .field label {
-  color: #936000;
+  color: #2a0b53;
   font-size: 18px;
+  font-weight: 700;
 }
 
 .field input {
@@ -113,16 +131,27 @@
   min-height: 52px;
   padding: 9px 14px;
   border: 2px solid var(--login-border);
-  border-radius: 12px;
+  border-radius: 0;
   outline: none;
   background: #fff;
+  box-shadow: inset 2px 2px 0 rgb(42 11 83 / 10%);
   color: var(--login-ink);
   font: inherit;
   font-size: 21px;
+  transition: border-color 160ms var(--login-ease), box-shadow 160ms var(--login-ease);
+}
+
+.field input:hover:not(:focus) {
+  border-color: var(--login-purple);
+}
+
+.field input:focus {
+  border-color: var(--login-purple);
+  box-shadow: 3px 3px 0 var(--login-orange);
 }
 
 .field input::placeholder {
-  color: #536f84;
+  color: #4a6478;
   opacity: 1;
 }
 
@@ -130,7 +159,7 @@
 .showPasswordButton:focus-visible,
 .secondaryButton:focus-visible,
 .submitButton:focus-visible {
-  outline: 3px solid var(--login-blue);
+  outline: 3px solid var(--login-orange);
   outline-offset: 3px;
 }
 
@@ -150,20 +179,31 @@
 
 .showPasswordButton,
 .secondaryButton {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #96bed2;
-  border-radius: 10px;
-  background: #f2faff;
-  color: #174b6b;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 2px solid var(--login-border);
+  border-radius: 0;
+  background: var(--login-purple);
+  box-shadow: 3px 3px 0 var(--login-border);
+  color: #ffffff;
   cursor: pointer;
   font: inherit;
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 700;
+  transition: transform 120ms var(--login-ease), box-shadow 120ms var(--login-ease), background-color 160ms var(--login-ease);
 }
 
 .showPasswordButton:hover,
 .secondaryButton:hover {
-  background: #e2f4ff;
+  background: var(--login-purple-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--login-border);
+}
+
+.showPasswordButton:active,
+.secondaryButton:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--login-border);
 }
 
 .fieldError {
@@ -178,27 +218,35 @@
   min-height: 54px;
   margin-top: 6px;
   padding: 10px 16px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--login-yellow);
-  color: #26394b;
+  border: 3px solid var(--login-border);
+  border-radius: 0;
+  background: var(--login-orange);
+  box-shadow: 4px 4px 0 var(--login-border);
+  color: #1b083f;
   cursor: pointer;
   font: inherit;
   font-size: 22px;
-  font-weight: 700;
-  transition: background-color 140ms ease, transform 140ms ease;
+  font-weight: 800;
+  transition: background-color 160ms var(--login-ease), transform 120ms var(--login-ease), box-shadow 120ms var(--login-ease);
 }
 
 .loginPage .submitButton:hover:not(:disabled) {
-  background: #f4c947;
-  transform: translateY(-1px);
+  background: var(--login-orange-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--login-border);
+}
+
+.loginPage .submitButton:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--login-border);
 }
 
 .loginPage .submitButton:disabled {
-  background: #dbe7ed;
-  color: #40596b;
+  background: #e6dcfa;
+  color: #3b2a63;
+  box-shadow: none;
   opacity: 1;
-  cursor: not-allowed;
+  cursor: progress;
 }
 
 .securityNote {
@@ -212,15 +260,17 @@
 .error {
   padding: 12px 14px;
   margin: 0 0 16px;
-  border-radius: 10px;
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--login-border);
   font-size: 18px;
   line-height: 1.2;
+  animation: cardEnter 260ms var(--login-ease) both;
 }
 
 .notice {
-  border: 1px solid #9ecce3;
-  background: #eef9ff;
-  color: #174b6b;
+  border: 2px solid var(--login-border);
+  background: #ede8fa;
+  color: #1b083f;
 }
 
 .notice progress {
@@ -229,9 +279,9 @@
 }
 
 .error {
-  border: 1px solid #e6a7a0;
-  background: #fff2f0;
-  color: #8f1e16;
+  border: 2px solid var(--login-border);
+  background: #ffe6f0;
+  color: #7a0f38;
 }
 
 .error p {
@@ -376,6 +426,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .submitButton,
+  .showPasswordButton,
+  .secondaryButton,
+  .loginCard,
+  .notice,
+  .error,
+  .field input,
   .mascotSprite {
     transition: none;
     animation: none;

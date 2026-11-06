@@ -12,6 +12,7 @@ import {
   type VisualState,
 } from "@/components/visual-theme";
 import "@/styles/visual-comparison.css";
+import "@/styles/pixel-polish.css";
 import {
   IconHome,
   IconCalificaciones,
