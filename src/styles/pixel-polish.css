@@ -671,7 +671,6 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] h2.
 }
 
 /* ==========================================================================
-<<<<<<< Updated upstream
    Enlaces con forma de botón (a.btn-primary / a.btn-secondary)
    ========================================================================== */
 [data-visual-shell][data-visual-style="pixelretro"] a:is(.btn-primary, .btn-secondary),
@@ -722,7 +721,8 @@ dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .bt
   transform: translate(3px, 3px);
   box-shadow: 0 0 0 var(--surface-border);
 }
-=======
+
+/* ==========================================================================
    Lista desplegable de respaldo (PixelSelectEnhancer) para navegadores sin base-select
    ========================================================================== */
 .pixel-listbox {
@@ -766,4 +766,3 @@ dialog[data-visual-modal][data-visual-style="pixelretro"] a:is(.btn-primary, .bt
 .pixel-listbox li[aria-selected="true"] { background: var(--brand-primary); color: var(--brand-contrast); border-color: var(--surface-border); }
 .pixel-listbox li[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .pixel-listbox { animation: none; } }
->>>>>>> Stashed changes
