@@ -9,6 +9,7 @@ import {GET as kardex} from "@/app/api/kardex/route";
 import {GET as schedule} from "@/app/api/schedule/route";
 import {GET as health} from "@/app/api/health/route";
 import {encryptSession} from "@/lib/crypto";
+import {resetRateLimitsForTests} from "@/lib/rate-limit";
 const base="https://portal.example.invalid";
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{"content-type":"application/json"}});
 const credentials={email:"alumno@example.invalid",password:" clave-ficticia "};
@@ -16,7 +17,7 @@ const profile={numero_control:"TEST-01",email:"alumno@example.invalid",semestre:
 const jwt=()=>`e30.${btoa(JSON.stringify({exp:Math.floor(Date.now()/1000)+1800}))}.firma-ficticia`;
 const post=(path:string,body:unknown,headers:Record<string,string>={origin:base})=>new NextRequest(base+path,{method:"POST",headers:{"content-type":"application/json",...headers},body:JSON.stringify(body)});
 const cookie=()=>encryptSession({token:"token-ficticio",numero_control:"TEST-01",exp:Math.floor(Date.now()/1000)+1800,createdAt:Math.floor(Date.now()/1000)});
-beforeEach(()=>{vi.stubEnv("SESSION_SECRET","ab".repeat(32));});
+beforeEach(()=>{vi.stubEnv("SESSION_SECRET","ab".repeat(32));resetRateLimitsForTests();});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe("Rutas propias y aislamiento",()=>{
  it("health responde sin consultar SII",async()=>{const f=vi.fn();vi.stubGlobal("fetch",f);expect((await health()).status).toBe(200);expect(f).not.toHaveBeenCalled();});
