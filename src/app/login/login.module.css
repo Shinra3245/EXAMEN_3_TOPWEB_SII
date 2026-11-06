@@ -1,4 +1,14 @@
+/* La ruta de login no carga las fuentes del menú: se declara Manrope aquí. */
+@font-face {
+  font-family: "LoginManrope";
+  src: url("/assets/visual/fonts/Manrope.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 .loginPage {
+  --login-text-font: "LoginManrope", system-ui, -apple-system, "Segoe UI", sans-serif;
   --login-bg: var(--pixel-cloud);
   --login-surface: var(--pixel-surface);
   --login-ink: var(--pixel-ink);
@@ -16,7 +26,9 @@
   overflow: hidden;
   background: var(--login-bg);
   color: var(--login-ink);
-  font-family: var(--font-pixel-body), "Courier New", monospace;
+  font-family: var(--login-text-font);
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .banner {
@@ -75,12 +87,13 @@
 .eyebrow {
   display: inline-block;
   margin: 0 0 14px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border: 2px solid var(--login-border);
   background: var(--login-purple);
   color: #ffffff;
-  font-size: 15px;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
 .loginHeader h1 {
@@ -94,10 +107,11 @@
 }
 
 .loginHeader > p:last-child {
-  margin: 10px 0 0;
-  color: var(--login-muted);
-  font-size: 20px;
-  line-height: 1.1;
+  margin: 12px 0 0;
+  color: #2c4660;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .form {
@@ -121,8 +135,8 @@
 
 .field label {
   color: #2a0b53;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .field input {
@@ -137,7 +151,8 @@
   box-shadow: inset 2px 2px 0 rgb(42 11 83 / 10%);
   color: var(--login-ink);
   font: inherit;
-  font-size: 21px;
+  font-size: 18px;
+  font-weight: 600;
   transition: border-color 160ms var(--login-ease), box-shadow 160ms var(--login-ease);
 }
 
@@ -152,6 +167,7 @@
 
 .field input::placeholder {
   color: #4a6478;
+  font-weight: 500;
   opacity: 1;
 }
 
@@ -188,29 +204,39 @@
   color: #ffffff;
   cursor: pointer;
   font: inherit;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   transition: transform 120ms var(--login-ease), box-shadow 120ms var(--login-ease), background-color 160ms var(--login-ease);
 }
 
-.showPasswordButton:hover,
-.secondaryButton:hover {
-  background: var(--login-purple-hover);
+/*
+ * globals.css define `button:hover:not(:disabled)` con fondo gris claro (0,2,1).
+ * Estas reglas deben pesar más para que el texto blanco nunca quede sobre gris claro.
+ */
+.loginPage .showPasswordButton:hover:not(:disabled),
+.loginPage .secondaryButton:hover:not(:disabled),
+.loginPage .showPasswordButton:focus-visible,
+.loginPage .secondaryButton:focus-visible {
+  background-color: var(--login-purple-hover);
+  color: #ffffff;
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--login-border);
 }
 
-.showPasswordButton:active,
-.secondaryButton:active {
+.loginPage .showPasswordButton:active:not(:disabled),
+.loginPage .secondaryButton:active:not(:disabled) {
+  background-color: #482a9d;
+  color: #ffffff;
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 var(--login-border);
 }
 
 .fieldError {
   margin: 0;
-  color: #a61b1b;
-  font-size: 17px;
-  line-height: 1.15;
+  color: #8f1238;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .loginPage .submitButton {
@@ -251,8 +277,9 @@
 
 .securityNote {
   margin: 18px 0 0;
-  color: var(--login-muted);
-  font-size: 16px;
+  color: #2c4660;
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -262,8 +289,9 @@
   margin: 0 0 16px;
   border-radius: 0;
   box-shadow: 3px 3px 0 var(--login-border);
-  font-size: 18px;
-  line-height: 1.2;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
   animation: cardEnter 260ms var(--login-ease) both;
 }
 
@@ -310,9 +338,10 @@
 }
 
 .mascot figcaption {
-  margin-top: 4px;
-  color: var(--login-muted);
-  font-size: 17px;
+  margin-top: 6px;
+  color: #2c4660;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 @keyframes writeFrames {
@@ -349,12 +378,12 @@
 
   .eyebrow {
     margin-bottom: 6px;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .loginHeader > p:last-child {
     margin-top: 6px;
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .fieldset {
@@ -362,8 +391,8 @@
   }
 
   .field input {
-    min-height: 46px;
-    font-size: 19px;
+    min-height: 48px;
+    font-size: 17px;
   }
 
   .submitButton {
@@ -373,7 +402,7 @@
 
   .securityNote {
     margin-top: 9px;
-    font-size: 15px;
+    font-size: 13.5px;
   }
 
   .mascot {
@@ -383,7 +412,7 @@
 
   .mascot figcaption {
     margin-top: 1px;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .notice,

@@ -30,6 +30,40 @@ dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme="osc
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffb27a' d='M0 0h14v2H0zM2 2h10v2H2zM4 4h6v2H4zM6 6h2v2H6z'/%3E%3C/svg%3E");
 }
 
+/* --- Tipografía legible: Manrope (ancha y geométrica) en lugar de Source Sans (condensada) --- */
+/* Selector con la misma especificidad que los bloques de tema para poder sustituir la variable. */
+[data-visual-shell][data-visual-style="pixelretro"][data-visual-theme],
+dialog[data-visual-modal][data-visual-style="pixelretro"][data-visual-theme] {
+  --font-family-base: "VisualManrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-family-base);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+
+/* Solo texto corrido y de datos; los títulos y rótulos pixel conservan su fuente display. */
+[data-visual-shell][data-visual-style="pixelretro"] :where(p, li, label, td, tbody th, caption, small, legend) {
+  font-family: var(--font-family-base);
+}
+
+/* Utilidades de texto pequeño (Tailwind) más grandes y con más cuerpo. */
+[data-visual-shell][data-visual-style="pixelretro"] .text-xs { font-size: 0.875rem; line-height: 1.4; font-weight: 600; }
+[data-visual-shell][data-visual-style="pixelretro"] .text-sm { font-size: 0.975rem; line-height: 1.45; font-weight: 600; }
+
+/* Etiquetas de formulario y notas de apoyo. */
+[data-visual-shell][data-visual-style="pixelretro"] label,
+dialog[data-visual-modal][data-visual-style="pixelretro"] label {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+[data-visual-shell][data-visual-style="pixelretro"] :is(.vs-note, .visual-note, [class*="hint"], [class*="caption"]) {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 /* --- Transición suave entre temas --------------------------------------- */
 [data-visual-shell][data-visual-style="pixelretro"],
 [data-visual-shell][data-visual-style="pixelretro"] :is(
@@ -174,14 +208,65 @@ dialog[data-visual-modal][data-visual-style="pixelretro"] select option:checked 
 }
 
 /* --- Tablas ------------------------------------------------------------- */
-[data-visual-shell][data-visual-style="pixelretro"] .table-scroll :is(th, td) {
-  font-size: 0.95rem;
-  line-height: 1.35;
+[data-visual-shell][data-visual-style="pixelretro"] table {
+  font-size: 1.0625rem;
 }
 
-[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td :is(.text-xs, small) {
-  font-size: 0.8125rem;
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll :is(th, td) {
+  padding: 0.95rem 1.15rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--text-main);
+}
+
+/* Encabezados: pixel display más grande y con aire. */
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll thead th {
+  font-family: var(--font-family-base);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgb(42 11 83 / 55%);
+  padding-block: 1rem;
+}
+
+[data-visual-shell][data-visual-style="pixelretro"][data-visual-theme="oscuro"] .table-scroll thead th {
+  color: #1b083f;
+  text-shadow: none;
+}
+
+/* Primera columna (materia / periodo): más peso. */
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll tbody th,
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td strong,
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td:nth-child(2) {
+  font-weight: 800;
+}
+
+/* Claves de materia, observaciones y notas dentro de celdas: legibles, no grises tenues. */
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td :is(.text-xs, small, .text-sm) {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   color: var(--text-muted);
+}
+
+/* Cifras (calificaciones, créditos): más grandes. */
+[data-visual-shell][data-visual-style="pixelretro"] .table-scroll td:is(:nth-last-child(2), :nth-last-child(3)) {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+/* Subtítulo de la tabla (caption). */
+[data-visual-shell][data-visual-style="pixelretro"] caption {
+  padding: 1rem 1.15rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 [data-visual-shell][data-visual-style="pixelretro"] .table-scroll td {
