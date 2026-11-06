@@ -15,6 +15,7 @@
   --pixel-ink: #1b3044;
   --pixel-muted: #5c7488;
   --pixel-border: #c7dfea;
+  --pixel-control-border: #7196ad;
   --pixel-blue: #238dcc;
   --pixel-yellow: #ffda63;
   --pixel-green: #2c8a66;
@@ -351,7 +352,7 @@ button[type="submit"]:hover:not(:disabled) {
 .app-shell select,
 .app-shell textarea {
   min-height: 42px;
-  border-color: #bddcea;
+  border-color: var(--pixel-control-border);
   border-radius: 10px;
   background-color: #fff;
   color: var(--shell-ink);
@@ -673,44 +674,44 @@ button[type="submit"]:hover:not(:disabled) {
   background: #fff0ef;
 }
 
-.app-content .table-scroll {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll {
   border: 1px solid #c8e2ee;
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 7px 18px rgb(31 90 122 / 5%);
 }
 
-.app-content .table-scroll table {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll table {
   margin: 0;
   border-collapse: separate;
   border-spacing: 0;
   color: #29495f;
 }
 
-.app-content .table-scroll th,
-.app-content .table-scroll td {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll th,
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll td {
   padding: 0.65rem 0.8rem;
   border: 0;
   border-bottom: 1px solid #e0edf3;
 }
 
-.app-content .table-scroll th {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll th {
   background: #e9f6fb;
   color: #214c68;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.app-content .table-scroll tr:nth-child(even) td {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll tr:nth-child(even) td {
   background: #f8fcfe;
 }
 
-.app-content .table-scroll tr:last-child td,
-.app-content .table-scroll tr:last-child th {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll tr:last-child td,
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll tr:last-child th {
   border-bottom: 0;
 }
 
-.app-content .table-scroll caption {
+:is(.report-page, .admin-report-page, .admin-types-page) .table-scroll caption {
   padding: 0.75rem;
   color: var(--shell-muted);
   text-align: left;
@@ -865,7 +866,7 @@ button[type="submit"]:hover:not(:disabled) {
     width: 100%;
   }
 
-  .app-content .table-scroll table {
+  :is(.report-page, .admin-report-page, .admin-types-page) .table-scroll table {
     min-width: 38rem;
   }
 }

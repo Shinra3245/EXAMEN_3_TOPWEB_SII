@@ -11,6 +11,8 @@
 ## Hallazgos y correcciones
 
 - **P2, corregido — contraste de campos del login.** La primera captura tenía texto de ejemplo y texto del botón deshabilitado con contraste menor al recomendado. Se oscurecieron ambos colores y se volvió a capturar móvil y escritorio. Contraste final: placeholder 5.28:1, acción deshabilitada 5.83:1, enlace 5.24:1, texto principal 13.52:1 y acción amarilla 8.74:1.
+- **P2, corregido — contraste de los campos y estilo del botón activo.** Una revisión independiente detectó que la regla global para botones submit impedía aplicar el amarillo del login, y que los bordes de campos eran demasiado claros. Se aumentó la prioridad del estilo local del login y se usa `#7196ad` para los bordes interactivos, con contraste de 3.15:1 contra el campo blanco. Firefox confirma el botón activo en `rgb(255, 218, 99)` y el borde en `rgb(113, 150, 173)`.
+- **P2, corregido — alcance de las tablas.** Los estilos de tabla ahora se limitan a las páginas de reportes y administración. La tabla académica de Horario conserva el estilo base: bordes de celda, márgenes y `border-collapse: collapse`; se comprobó con fixture sintético en Firefox.
 - **P2, corregido — filtro “Solo mis reportes”.** En la primera captura, el checkbox quedaba separado arriba del texto. Se alinearon en una fila y se verificó el resultado a 360 px y 390 px.
 - **Sin hallazgos P0, P1 o P2 pendientes.** El indicador flotante de Next.js quedó desactivado solo en desarrollo para que no cubra la vista local.
 

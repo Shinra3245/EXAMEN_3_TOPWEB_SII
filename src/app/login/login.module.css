@@ -5,7 +5,7 @@
   --login-muted: var(--pixel-muted);
   --login-blue: var(--pixel-blue);
   --login-yellow: var(--pixel-yellow);
-  --login-border: var(--pixel-border);
+  --login-border: var(--pixel-control-border);
 
   min-height: 100svh;
   overflow: hidden;
@@ -173,7 +173,7 @@
   line-height: 1.15;
 }
 
-.submitButton {
+.loginPage .submitButton {
   width: 100%;
   min-height: 54px;
   margin-top: 6px;
@@ -189,14 +189,15 @@
   transition: background-color 140ms ease, transform 140ms ease;
 }
 
-.submitButton:hover:not(:disabled) {
+.loginPage .submitButton:hover:not(:disabled) {
   background: #f4c947;
   transform: translateY(-1px);
 }
 
-.submitButton:disabled {
+.loginPage .submitButton:disabled {
   background: #dbe7ed;
   color: #40596b;
+  opacity: 1;
   cursor: not-allowed;
 }
 
