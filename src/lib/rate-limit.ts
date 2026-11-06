@@ -16,7 +16,7 @@ const MAX_TRACKED_KEYS = 5000;
 
 const memoryHits = new Map<string, number[]>();
 
-/** Solo para pruebas: vacía los contadores en memoria. */
+/** Vacía los contadores en memoria (uso en pruebas). los contadores en memoria. */
 export function resetRateLimitsForTests(): void {
   memoryHits.clear();
 }
@@ -46,17 +46,28 @@ function allowInMemory(key: string, limit: number): boolean {
   return true;
 }
 
+/**
+ * Un intento se permite solo si lo permiten AMBOS contadores:
+ * - el binding de Cloudflare, compartido entre instancias pero aproximado: sus
+ *   contadores son eventualmente consistentes y puede dejar pasar ráfagas;
+ * - el contador en memoria, exacto pero solo dentro de una misma instancia.
+ * Juntos cubren lo que cada uno deja pasar. Para un tope global y estricto en el
+ * borde conviene además una regla de WAF Rate Limiting en el panel de Cloudflare.
+ */
 async function allow(
   bindingName: "LOGIN_IP_LIMITER" | "LOGIN_ACCOUNT_LIMITER",
   key: string,
-  fallbackLimit: number,
+  limit: number,
 ): Promise<boolean> {
+  // Se consulta siempre la memoria para que cuente cada intento, aunque el binding bloquee.
+  const memoryAllowed = allowInMemory(`${bindingName}:${key}`, limit);
+
   const binding = requestEnvStorage.getStore()?.[bindingName] as RateLimitBinding | undefined;
   if (binding && typeof binding.limit === "function") {
     const { success } = await binding.limit({ key });
-    return success;
+    return success && memoryAllowed;
   }
-  return allowInMemory(`${bindingName}:${key}`, fallbackLimit);
+  return memoryAllowed;
 }
 
 /** El correo no se guarda en claro en el limitador: solo su huella SHA-256. */

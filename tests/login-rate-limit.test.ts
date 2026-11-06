@@ -94,6 +94,21 @@ describe("Límite de intentos de inicio de sesión", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("el contador en memoria bloquea aunque el binding de Cloudflare deje pasar (es aproximado)", async () => {
+    const fetchMock = stubSiiRejecting();
+    const permissive = { limit: vi.fn().mockResolvedValue({ success: true }) };
+    const env = { SESSION_SECRET: "ab".repeat(32), LOGIN_IP_LIMITER: permissive, LOGIN_ACCOUNT_LIMITER: permissive };
+
+    const statuses: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      const res = await runWithEnv(env, () => login(attempt("victima@example.invalid", `203.0.113.${i}`)));
+      statuses.push(res.status);
+    }
+
+    expect(statuses).toEqual([401, 401, 401, 401, 401, 429, 429]);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
   it("no cuenta intentos con el cuerpo inválido (se rechazan antes)", async () => {
     stubSiiRejecting();
     const bad = new NextRequest(base + "/api/auth/login", {
