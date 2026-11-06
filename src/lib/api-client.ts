@@ -8,10 +8,22 @@ export class ApiClientError extends Error {
     this.name = "ApiClientError";
   }
 }
+
+interface ApiResponse<T> {
+  success?: boolean;
+  data?: T;
+  error?: {
+    message?: string;
+    code?: string;
+  };
+}
+
 let epoch = 0;
-export function advanceApiEpoch() {
+
+export function advanceApiEpoch(): number {
   return ++epoch;
 }
+
 export async function apiRequest<T>(
   path: string,
   options?: RequestInit,
@@ -20,6 +32,7 @@ export async function apiRequest<T>(
     typeof window === "undefined"
       ? "https://same-origin.invalid"
       : window.location.origin;
+
   let url: URL;
   try {
     url = new URL(path, base);
@@ -30,23 +43,29 @@ export async function apiRequest<T>(
       "INVALID_API_PATH",
     );
   }
+
   if (
     !path.startsWith("/api/") ||
     path.includes("\\") ||
     url.origin !== base ||
     !url.pathname.startsWith("/api/") ||
     url.hash
-  )
+  ) {
     throw new ApiClientError(
       "Ruta de consulta no válida",
       400,
       "INVALID_API_PATH",
     );
+  }
+
   const requestEpoch = epoch;
   const headers = new Headers(options?.headers);
   headers.set("Accept", "application/json");
-  if (typeof options?.body === "string")
+
+  if (typeof options?.body === "string") {
     headers.set("Content-Type", "application/json");
+  }
+
   let response: Response;
   try {
     response = await fetch(path, {
@@ -60,34 +79,38 @@ export async function apiRequest<T>(
     if (
       options?.signal?.aborted ||
       (error instanceof Error && error.name === "AbortError")
-    )
+    ) {
       throw error;
+    }
+
     throw new ApiClientError(
       "No fue posible conectar con el servicio. Verifica tu conexión e intenta de nuevo.",
       0,
       "NETWORK_ERROR",
     );
   }
-  let body: {
-    success?: boolean;
-    data?: T;
-    error?: { message?: string; code?: string };
-  } | null = null;
+
+  let body: ApiResponse<T> | null = null;
   try {
     body = await response.json();
   } catch {
-    /* reject malformed envelopes below */
+    // La validación del sobre más abajo rechaza las respuestas mal formadas.
   }
-  if (options?.signal?.aborted)
+
+  if (options?.signal?.aborted) {
     throw new DOMException("Request aborted", "AbortError");
+  }
+
   if (
     response.status === 401 &&
     url.pathname !== "/api/auth/login" &&
     requestEpoch === epoch &&
     typeof window !== "undefined"
-  )
+  ) {
     window.dispatchEvent(new CustomEvent("sii:unauthorized"));
-  if (!response.ok)
+  }
+
+  if (!response.ok) {
     throw new ApiClientError(
       typeof body?.error?.message === "string"
         ? body.error.message
@@ -95,13 +118,19 @@ export async function apiRequest<T>(
       response.status,
       typeof body?.error?.code === "string" ? body.error.code : undefined,
     );
-  if (requestEpoch !== epoch)
+  }
+
+  if (requestEpoch !== epoch) {
     throw new DOMException("Session changed", "AbortError");
-  if (body?.success !== true || !Object.hasOwn(body, "data"))
+  }
+
+  if (body?.success !== true || !Object.hasOwn(body, "data")) {
     throw new ApiClientError(
       "La respuesta del servicio no es válida. Intenta de nuevo.",
       502,
       "INVALID_RESPONSE",
     );
+  }
+
   return body.data as T;
 }

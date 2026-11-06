@@ -1,24 +1,30 @@
 "use client";
+
 import type { ReactNode } from "react";
+
+interface ResourceStateProps {
+  loading: boolean;
+  error: string | null;
+  retry: () => void;
+  children: ReactNode;
+}
+
 export function ResourceState({
   loading,
   error,
   retry,
   children,
-}: {
-  loading: boolean;
-  error: string | null;
-  retry: () => void;
-  children: ReactNode;
-}) {
-  if (loading)
+}: ResourceStateProps) {
+  if (loading) {
     return (
       <p role="status" aria-live="polite">
         <progress aria-label="Consulta en curso" /> Consultando información del
         SII…
       </p>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
       <div role="alert">
         <p>{error}</p>
@@ -27,5 +33,7 @@ export function ResourceState({
         </button>
       </div>
     );
+  }
+
   return children;
 }

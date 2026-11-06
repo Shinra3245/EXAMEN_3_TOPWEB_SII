@@ -91,6 +91,14 @@ describe("WebCrypto AES-GCM Session Encryption & Decryption", () => {
     await expect(encryptSession(payload)).rejects.toThrow(ConfigurationError);
   });
 
+  it("valida la configuración antes de rechazar cookies demasiado grandes", async () => {
+    delete process.env.SESSION_SECRET;
+
+    await expect(decryptSession("x".repeat(4097))).rejects.toThrow(
+      ConfigurationError,
+    );
+  });
+
   it("falla si SESSION_SECRET no cumple la longitud de 32 bytes", async () => {
     process.env.SESSION_SECRET = "demasiado-corto";
 
