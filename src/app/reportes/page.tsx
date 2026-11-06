@@ -101,8 +101,8 @@ export default function ReportsPage() {
   const reports = reportsResource.data ?? [];
 
   return (
-    <>
-      <header className="mb-6">
+    <div className="report-page">
+      <header className="report-page-header mb-6">
         <h1 className="text-2xl font-bold">Reportes de fallas en aulas</h1>
         <p className="text-gray-600 mt-1">
           Consulta y apoya reportes de fallas físicas y técnicas en las aulas.
@@ -115,7 +115,10 @@ export default function ReportsPage() {
       </header>
 
       {/* Barra de filtros */}
-      <section aria-labelledby="filtros-heading" className="controls mb-6">
+      <section
+        aria-labelledby="filtros-heading"
+        className="report-filter-panel controls mb-6"
+      >
         <h2 id="filtros-heading" className="sr-only">
           Filtros de búsqueda
         </h2>
@@ -201,12 +204,18 @@ export default function ReportsPage() {
 
       {/* Avisos de acción */}
       {actionSuccess && (
-        <p role="status" className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded">
+        <p
+          role="status"
+          className="feedback feedback-success mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
+        >
           {actionSuccess}
         </p>
       )}
       {actionError && (
-        <p role="alert" className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded">
+        <p
+          role="alert"
+          className="feedback feedback-error mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded"
+        >
           {actionError}
         </p>
       )}
@@ -218,12 +227,12 @@ export default function ReportsPage() {
           void reportsResource.refresh();
         }}
       >
-        <div className="mb-2 text-sm text-gray-600">
+        <div className="report-count mb-2 text-sm text-gray-600">
           Mostrando {reports.length} {reports.length === 1 ? "reporte" : "reportes"}.
         </div>
 
         {reports.length === 0 ? (
-          <div className="p-8 text-center border border-dashed border-gray-300 rounded">
+          <div className="report-empty-state p-8 text-center border border-dashed border-gray-300 rounded">
             <p className="text-gray-500">
               No se encontraron reportes con los criterios seleccionados.
             </p>
@@ -246,7 +255,7 @@ export default function ReportsPage() {
               return (
                 <li
                   key={report.id}
-                  className="border border-gray-200 rounded p-4 bg-white shadow-sm"
+                  className="report-card border border-gray-200 rounded p-4 bg-white shadow-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2 border-b border-gray-100 pb-3">
                     <div>
@@ -265,7 +274,7 @@ export default function ReportsPage() {
 
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-block px-2.5 py-1 text-xs font-bold uppercase rounded ${
+                        className={`report-status report-status-${report.estado} inline-block px-2.5 py-1 text-xs font-bold uppercase rounded ${
                           report.estado === "resuelto"
                             ? "bg-green-100 text-green-800"
                             : report.estado === "en_revision"
@@ -361,7 +370,7 @@ export default function ReportsPage() {
 
                   {/* Panel expandible de historial */}
                   {isExpanded && report.historial && report.historial.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 bg-gray-50 p-3 rounded">
+                    <div className="report-history mt-3 pt-3 border-t border-gray-200 bg-gray-50 p-3 rounded">
                       <h3 className="text-xs font-bold uppercase text-gray-700 mb-2">
                         Historial de seguimiento
                       </h3>
@@ -387,6 +396,6 @@ export default function ReportsPage() {
           </ul>
         )}
       </ResourceState>
-    </>
+    </div>
   );
 }

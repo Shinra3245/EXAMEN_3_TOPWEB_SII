@@ -124,9 +124,11 @@ export default function AdminReportsPage() {
   const reports = reportsResource.data ?? [];
 
   return (
-    <>
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Gestión de reportes (Administrador)</h1>
+    <div className="admin-report-page">
+      <header className="report-page-header mb-6">
+          <h1 className="text-2xl font-bold">
+            Gestión de reportes (Administrador)
+          </h1>
         <p className="text-gray-600 mt-1">
           Bandeja de administración técnica para revisión, asignación de
           prioridad, cambio de estados y trazabilidad de aulas.
@@ -136,7 +138,7 @@ export default function AdminReportsPage() {
       {successMsg && (
         <p
           role="status"
-          className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
+          className="feedback feedback-success mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
         >
           {successMsg}
         </p>
@@ -146,9 +148,9 @@ export default function AdminReportsPage() {
       {summary && (
         <section
           aria-labelledby="summary-heading"
-          className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="admin-report-summary mb-8 grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          <div className="border border-gray-200 rounded p-4 bg-gray-50">
+          <div className="summary-card border border-gray-200 rounded p-4 bg-gray-50">
             <h2 id="summary-heading" className="text-base font-bold mb-3">
               Resumen de reportes
             </h2>
@@ -156,27 +158,27 @@ export default function AdminReportsPage() {
               {summary.total_reportes} reportes totales
             </p>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-              <div className="p-2 bg-yellow-100 rounded">
+              <div className="summary-chip summary-chip-received p-2 bg-yellow-100 rounded">
                 Recibidos: <strong>{summary.por_estado.recibido || 0}</strong>
               </div>
-              <div className="p-2 bg-blue-100 rounded">
+              <div className="summary-chip summary-chip-review p-2 bg-blue-100 rounded">
                 En revisión:{" "}
                 <strong>{summary.por_estado.en_revision || 0}</strong>
               </div>
-              <div className="p-2 bg-green-100 rounded">
+              <div className="summary-chip summary-chip-resolved p-2 bg-green-100 rounded">
                 Resueltos: <strong>{summary.por_estado.resuelto || 0}</strong>
               </div>
-              <div className="p-2 bg-gray-200 rounded">
+              <div className="summary-chip summary-chip-closed p-2 bg-gray-200 rounded">
                 Cerrados: <strong>{summary.por_estado.cerrado || 0}</strong>
               </div>
-              <div className="p-2 bg-red-100 rounded">
+              <div className="summary-chip summary-chip-discarded p-2 bg-red-100 rounded">
                 Descartados:{" "}
                 <strong>{summary.por_estado.descartado || 0}</strong>
               </div>
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded p-4 bg-gray-50">
+          <div className="summary-card border border-gray-200 rounded p-4 bg-gray-50">
             <h2 className="text-base font-bold mb-2">
               Salones con más fallas reportadas
             </h2>
@@ -210,7 +212,10 @@ export default function AdminReportsPage() {
           void summaryResource.refresh();
         }}
       >
-        <section aria-labelledby="bandeja-heading">
+        <section
+          className="admin-report-inbox"
+          aria-labelledby="bandeja-heading"
+        >
           <h2 id="bandeja-heading" className="text-lg font-bold mb-4">
             Bandeja de atención ({reports.length})
           </h2>
@@ -288,12 +293,12 @@ export default function AdminReportsPage() {
           onDismiss={closeManageModal}
           dismissible={!updating}
         >
-          <div className="w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
+          <div className="report-dialog w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <h2 id="manage-modal-title" className="text-xl font-bold mb-3">
               Gestionar reporte: Aula {selectedReport.salon}
             </h2>
 
-            <div className="mb-4 rounded bg-gray-50 p-3 text-xs border border-gray-200">
+            <div className="report-session-summary mb-4 rounded bg-gray-50 p-3 text-xs border border-gray-200">
               <p>
                 <strong>Tipo:</strong> {selectedReport.tipo_nombre}
               </p>
@@ -394,6 +399,6 @@ export default function AdminReportsPage() {
           </div>
         </Modal>
       )}
-    </>
+    </div>
   );
 }

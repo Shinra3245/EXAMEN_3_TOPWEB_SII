@@ -104,8 +104,8 @@ export default function AdminTiposPage() {
   const types = typesResource.data ?? [];
 
   return (
-    <>
-      <header className="mb-6">
+    <div className="admin-types-page">
+      <header className="report-page-header mb-6">
         <h1 className="text-2xl font-bold">Catálogo de tipos de falla</h1>
         <p className="text-gray-600 mt-1">
           Configuración administrativa del catálogo de opciones disponibles al
@@ -116,7 +116,7 @@ export default function AdminTiposPage() {
       {successMsg && (
         <p
           role="status"
-          className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
+          className="feedback feedback-success mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
         >
           {successMsg}
         </p>
@@ -124,14 +124,17 @@ export default function AdminTiposPage() {
       {errorMsg && (
         <p
           role="alert"
-          className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded"
+          className="feedback feedback-error mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded"
         >
           {errorMsg}
         </p>
       )}
 
       {/* Formulario para añadir nuevo tipo */}
-      <section aria-labelledby="nuevo-tipo-heading" className="controls mb-8">
+      <section
+        aria-labelledby="nuevo-tipo-heading"
+        className="admin-type-form controls mb-8"
+      >
         <h2 id="nuevo-tipo-heading" className="text-base font-bold mb-3">
           {editingId === null ? "Agregar nuevo tipo de falla" : "Editar tipo de falla"}
         </h2>
@@ -172,7 +175,7 @@ export default function AdminTiposPage() {
           void typesResource.refresh();
         }}
       >
-        <section aria-labelledby="catalogo-heading">
+        <section className="admin-types-table" aria-labelledby="catalogo-heading">
           <h2 id="catalogo-heading" className="text-lg font-bold mb-3">
             Tipos registrados ({types.length})
           </h2>
@@ -200,7 +203,9 @@ export default function AdminTiposPage() {
                       </td>
                       <td>
                         <span
-                          className={`inline-block px-2 py-0.5 text-xs font-semibold rounded ${
+                          className={`type-status ${
+                            type.activo ? "is-active" : "is-inactive"
+                          } inline-block px-2 py-0.5 text-xs font-semibold rounded ${
                             type.activo
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-200 text-gray-700"
@@ -255,6 +260,6 @@ export default function AdminTiposPage() {
           </div>
         </section>
       </ResourceState>
-    </>
+    </div>
   );
 }

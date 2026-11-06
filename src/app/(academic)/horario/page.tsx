@@ -256,6 +256,7 @@ export default function SchedulePage() {
                               {session.salon ? (
                                 <button
                                   type="button"
+                                  className="report-failure-button"
                                   onClick={() =>
                                     openReportModal(subject, session, period)
                                   }
@@ -293,12 +294,12 @@ export default function SchedulePage() {
           onDismiss={closeModal}
           dismissible={!submitting}
         >
-          <div className="w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
+          <div className="report-dialog w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <h2 id="report-modal-title" className="text-xl font-bold mb-3">
               Reportar falla en aula
             </h2>
 
-            <div className="mb-4 rounded bg-gray-50 p-3 border border-gray-200 text-sm">
+            <div className="report-session-summary mb-4 rounded bg-gray-50 p-3 border border-gray-200 text-sm">
               <p>
                 <strong>Salón:</strong> {activeSession.session.salon}
               </p>
@@ -320,7 +321,7 @@ export default function SchedulePage() {
 
             {reportSuccess ? (
               <div role="status" className="mb-4">
-                <p className="text-green-800 font-semibold mb-3">
+                <p className="feedback feedback-success text-green-800 font-semibold mb-3">
                   {reportSuccess}
                 </p>
                 <div className="flex gap-2">
@@ -338,7 +339,10 @@ export default function SchedulePage() {
             ) : (
               <form onSubmit={handleSubmitReport} className="flex flex-col gap-4">
                 {reportError && (
-                  <p role="alert" className="text-red-700 font-semibold">
+                  <p
+                    role="alert"
+                    className="feedback feedback-error text-red-700 font-semibold"
+                  >
                     {reportError}
                   </p>
                 )}
