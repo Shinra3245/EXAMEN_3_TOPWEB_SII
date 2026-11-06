@@ -10,6 +10,7 @@ export default function KardexPage() {
   const [period, setPeriod] = useState("");
   const [order, setOrder] = useState("original");
   const all = resource.data?.kardex ?? [];
+  // El índice original sirve como desempate estable en los órdenes alternativos.
   const rows = all
     .map((item, index) => ({ item, index }))
     .filter(
@@ -74,6 +75,7 @@ export default function KardexPage() {
               onChange={(e) => setPeriod(e.target.value)}
             >
               <option value="">Todos los periodos</option>
+              {/* Los periodos vacíos no se ofrecen como filtro separado. */}
               {[...new Set(all.map((r) => r.periodo))]
                 .filter(Boolean)
                 .map((p) => (
@@ -134,6 +136,7 @@ export default function KardexPage() {
                 </tr>
               </thead>
               <tbody>
+                {/* El índice distingue intentos repetidos del mismo curso. */}
                 {rows.map(({ item, index }) => (
                   <tr key={index}>
                     <td>{item.periodo || "No disponible"}</td>

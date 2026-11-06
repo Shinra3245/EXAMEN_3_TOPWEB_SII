@@ -32,10 +32,12 @@ const ALLOWED_METHODS: Record<string, HttpMethod> = {
   [SII_ENDPOINTS.SCHEDULE]: "GET",
 };
 
+// Realiza peticiones al SII validando rutas y métodos contra una lista cerrada.
 export async function requestSii<T = unknown>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
+  // No se aceptan rutas arbitrarias aunque provengan de otra parte del servidor.
   if (!Object.hasOwn(ALLOWED_METHODS, endpoint)) {
     throw new ForbiddenError(
       "DISALLOWED_UPSTREAM_PATH",
@@ -54,6 +56,7 @@ export async function requestSii<T = unknown>(
 
   const baseUrl = getSiiBaseUrl();
   const controller = new AbortController();
+  // El aborto acota cuánto tiempo puede quedar pendiente la llamada upstream.
   const timeout = setTimeout(() => controller.abort(), getSiiTimeoutMs());
 
   try {
@@ -62,6 +65,7 @@ export async function requestSii<T = unknown>(
     };
 
     if (options.token) {
+      // Evita incluir saltos de línea o valores excesivos en el encabezado HTTP.
       if (options.token.length > 4096 || /[\r\n]/.test(options.token)) {
         throw new UpstreamError(
           502,
@@ -83,6 +87,7 @@ export async function requestSii<T = unknown>(
       body:
         options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: controller.signal,
+      // Las redirecciones no deben llevar el token a una ruta distinta.
       redirect: "manual",
       cache: "no-store",
     });
@@ -117,6 +122,7 @@ export async function requestSii<T = unknown>(
       );
     }
 
+    // Limita el cuerpo institucional a 1 MiB antes de interpretarlo como JSON.
     const responseText = await readBoundedText(response, 1024 * 1024);
     try {
       return JSON.parse(responseText) as T;
@@ -128,6 +134,7 @@ export async function requestSii<T = unknown>(
       );
     }
   } catch (error) {
+    // El timeout aborta la petición y se clasifica como UPSTREAM_TIMEOUT.
     if (
       controller.signal.aborted ||
       (error instanceof Error && error.name === "AbortError")
@@ -165,6 +172,7 @@ export async function authenticateSii(
     method: "POST",
     body: { email, password },
   });
+  // El token solo se acepta desde la estructura de login documentada por el SII.
   const token = body?.message?.login?.token;
 
   if (
@@ -196,6 +204,7 @@ export async function fetchSiiResource<T = unknown>(
     typeof body.code === "number" &&
     Object.hasOwn(body, "data");
 
+  // No se consume data hasta confirmar la forma básica del sobre institucional.
   if (!isValidEnvelope) {
     throw new UpstreamError(
       502,
@@ -204,6 +213,7 @@ export async function fetchSiiResource<T = unknown>(
     );
   }
 
+  // El sobre puede estar bien formado y reportar rechazo de sesión o acceso.
   if (body.code === 401) {
     throw new AuthenticationError(
       "UPSTREAM_UNAUTHORIZED",

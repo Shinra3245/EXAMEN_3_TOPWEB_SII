@@ -1,9 +1,11 @@
 
+// Error base con estado y código públicos controlados por la aplicación.
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly errorCode: string;
   public readonly isPublic: boolean;
 
+  // El indicador permite distinguir errores seguros para el cliente de fallos internos.
   constructor(
     statusCode: number,
     errorCode: string,
@@ -67,6 +69,7 @@ export function toSafeErrorResponse(
   error: unknown,
   fallbackMessage = "Error interno del servidor"
 ): Response {
+  // Los errores de aplicación conservan su estado y mensaje público controlado.
   if (error instanceof AppError && error.isPublic) {
     return Response.json(
       {
@@ -85,7 +88,7 @@ export function toSafeErrorResponse(
     );
   }
 
-  // Errores no controlados: NO exponer stacktrace ni detalles internos
+  // Los errores no controlados no exponen trazas ni detalles internos.
   return Response.json(
     {
       success: false,

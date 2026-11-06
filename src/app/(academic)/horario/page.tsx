@@ -4,11 +4,13 @@ import { useResource } from "@/hooks/use-resource";
 import { ResourceState } from "@/components/resource-state";
 import { dayLabels, periodLabel } from "@/lib/academic-presentation";
 import type { DiaSemana, SchedulePeriodDTO } from "@/types/normalizers";
+// El orden de dayLabels define el orden canónico de los días en pantalla.
 const days = Object.keys(dayLabels) as DiaSemana[];
 export default function SchedulePage() {
   const resource = useResource<SchedulePeriodDTO[]>("/api/schedule");
   const [period, setPeriod] = useState("");
   const [day, setDay] = useState("");
+  // El selector conserva el índice del grupo, igual que la página de calificaciones.
   const groups = (resource.data ?? [])
     .map((group, index) => ({ group, index }))
     .filter(({ index }) => !period || period === String(index));
@@ -24,6 +26,7 @@ export default function SchedulePage() {
         })),
     ),
   );
+  // Las franjas que no se pudieron interpretar se conservan como texto crudo.
   const unparsed = groups.flatMap(({ group, index }) =>
     group.horario.flatMap((subject, subjectIndex) =>
       subject.diasNoInterpretados
@@ -117,6 +120,7 @@ export default function SchedulePage() {
               .filter((row) => row.session.dia === d)
               .sort((a, b) => a.session.inicio.localeCompare(b.session.inicio));
             const raw = unparsed.filter((row) => row.day === d);
+            // No se crea una sección de día si los filtros dejaron todo vacío.
             return !rows.length && !raw.length ? null : (
               <section key={d} aria-labelledby={`day-${d}`}>
                 <h2 id={`day-${d}`}>{dayLabels[d]}</h2>
@@ -153,6 +157,7 @@ export default function SchedulePage() {
                     </table>
                   </div>
                 )}
+                {/* El texto crudo se muestra como aviso porque no tiene horas confiables. */}
                 {raw.map(({ subject, key, period }) => (
                   <p key={key} className="notice">
                     Franja sin interpretar: {subject.nombre_materia} (

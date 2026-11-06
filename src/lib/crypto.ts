@@ -9,6 +9,7 @@ import { AuthenticationError } from "./errors";
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
 
+  // La conversión byte a byte evita expandir arreglos grandes como argumentos.
   for (let index = 0; index < bytes.byteLength; index++) {
     binary += String.fromCharCode(bytes[index]);
   }
@@ -34,6 +35,7 @@ async function getCryptoKey(customSecretBytes?: Uint8Array): Promise<CryptoKey> 
     "raw",
     secretBytes as unknown as ArrayBuffer,
     { name: "AES-GCM" },
+    // La clave solo se usa para cifrar y descifrar; no se puede exportar.
     false,
     ["encrypt", "decrypt"],
   );
@@ -48,6 +50,7 @@ export async function encryptSession(
   customSecretBytes?: Uint8Array,
 ): Promise<string> {
   const key = await getCryptoKey(customSecretBytes);
+  // AES-GCM requiere un IV nuevo para cada cifrado con la misma clave.
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encodedPayload = new TextEncoder().encode(JSON.stringify(payload));
 
@@ -73,6 +76,7 @@ export async function decryptSession(
   if (!cookieValue || typeof cookieValue !== "string") return null;
 
   const key = await getCryptoKey(customSecretBytes);
+  // Limita la entrada antes de decodificarla para evitar procesar cookies enormes.
   if (cookieValue.length > 4096) return null;
 
   try {
@@ -99,10 +103,12 @@ export async function decryptSession(
     if (!hasValidToken || !hasValidExpiration) return null;
 
     const nowInSeconds = Math.floor(Date.now() / 1000);
+    // También se comprueba la expiración aunque el contenido esté autenticado.
     if (nowInSeconds >= payload.exp) return null;
 
     return payload;
   } catch {
+    // Datos alterados, Base64 inválido o JSON incorrecto producen el mismo resultado.
     return null;
   }
 }
@@ -115,6 +121,7 @@ export function decodeJwtPayload(token: string): Record<string, unknown> | null 
     const parts = token.split(".");
     if (parts.length !== 3) return null;
 
+    // El payload JWT usa Base64 URL-safe y puede venir sin padding.
     let base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     while (base64.length % 4 !== 0) {
       base64 += "=";

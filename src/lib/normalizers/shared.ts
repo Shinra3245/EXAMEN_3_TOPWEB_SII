@@ -1,6 +1,8 @@
 import type { PeriodoDTO } from "@/types/normalizers";
 import { UpstreamError } from "../errors";
 
+// Contrato: si el upstream devuelve una forma inesperada se marca como error
+// 502 (INVALID_ACADEMIC_DATA) en lugar de propagar valores parciales.
 export function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new UpstreamError(
@@ -29,6 +31,7 @@ export function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+// Solo admite enteros >= 0; las cadenas deben ser dígitos puros.
 export function numberOrNull(value: unknown): number | null {
   if (typeof value === "string" && /^\d+$/.test(value.trim())) {
     value = Number(value);
@@ -49,6 +52,7 @@ export function grade(value: unknown): string | null {
   return null;
 }
 
+// A diferencia de numberOrNull, acepta decimales (ej. porcentajes de avance).
 export function decimalOrNull(value: unknown): number | null {
   if (typeof value === "string") {
     const trimmedValue = value.trim();

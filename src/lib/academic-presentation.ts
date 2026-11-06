@@ -8,6 +8,7 @@ export function periodLabel(period: PeriodoDTO | null): string {
     period.clave_periodo,
     period.anio,
   ]
+    // Omite partes vacías para evitar separadores sin contenido.
     .filter((value) => value !== null && value !== "")
     .join(" · ");
 
@@ -15,6 +16,7 @@ export function periodLabel(period: PeriodoDTO | null): string {
 }
 
 function normalizeSearchText(value: string): string {
+  // Permite comparar texto sin distinguir entre mayúsculas ni acentos.
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -38,6 +40,7 @@ interface GradeLevel {
 }
 
 export function gradeLevel(value: number | null): GradeLevel {
+  // Los datos ausentes o fuera del rango no deben mostrar un nivel de rendimiento.
   if (value === null || !Number.isFinite(value) || value < 0 || value > 100) {
     return { label: "Pendiente", level: "pending" };
   }

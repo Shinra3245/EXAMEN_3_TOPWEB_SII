@@ -15,6 +15,7 @@ const days: DiaSemana[] = [
 ];
 
 function parseTimeRange(value: string): { inicio: string; fin: string } | null {
+  // Acepta "HH:MM", "H:MM", con guion normal o en dash, y segundos opcionales.
   const match =
     /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*[-–]\s*(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(
       value.trim(),
@@ -30,6 +31,8 @@ function parseTimeRange(value: string): { inicio: string; fin: string } | null {
     endSecond,
   ] = match.slice(1).map((part) => Number(part ?? 0));
 
+  // Rechaza rangos inválidos o vacíos (inicio >= fin) y descarta segundos
+  // distintos de cero porque el DTO solo modela HH:MM.
   if (
     startHour > 23 ||
     endHour > 23 ||
@@ -64,6 +67,7 @@ export function normalizeSchedule(raw: unknown): SchedulePeriodDTO[] {
 
       for (const day of days) {
         const value = item[day];
+        // Celdas vacías se ignoran: no son error ni sesión.
         if (
           value === null ||
           value === undefined ||
@@ -82,6 +86,8 @@ export function normalizeSchedule(raw: unknown): SchedulePeriodDTO[] {
             salon: text(item[`${day}_clave_salon`]) || null,
           });
         } else {
+          // Valor no interpretable: se conserva el día en el reporte y el
+          // valor crudo permanece en los campos día (lunes, martes, ...).
           diasNoInterpretados.push(day);
         }
       }

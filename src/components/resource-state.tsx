@@ -15,6 +15,7 @@ export function ResourceState({
   retry,
   children,
 }: ResourceStateProps) {
+  // Se muestra un estado por vez: carga, error o contenido disponible.
   if (loading) {
     return (
       <p role="status" aria-live="polite">
@@ -28,6 +29,7 @@ export function ResourceState({
     return (
       <div role="alert">
         <p>{error}</p>
+        {/* La acción de reintento pertenece a la pantalla que inició la consulta. */}
         <button type="button" onClick={retry}>
           Reintentar consulta
         </button>
@@ -35,5 +37,6 @@ export function ResourceState({
     );
   }
 
+  // El contenido se muestra solo cuando terminó la carga sin error.
   return children;
 }

@@ -1,3 +1,4 @@
+// La clave distingue estados de recursos aunque las rutas anteriores sigan en memoria.
 export interface ResourceSnapshot<T> {
   key: symbol;
   path: string;
@@ -13,6 +14,7 @@ export function getVisibleResourceState<T>(
 ): ResourceSnapshot<T> {
   if (snapshot.key === key) return snapshot;
 
+  // Al cambiar el recurso, oculta datos y errores de la consulta anterior.
   return {
     key,
     path,

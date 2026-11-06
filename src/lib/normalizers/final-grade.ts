@@ -47,6 +47,8 @@ export function calculateFinal(
     );
   if (hasMissingEvaluation) return pending("parciales_incompletos");
 
+  // Aritmética con enteros escalados (x1e6) en lugar de números flotantes,
+  // para que el redondeo de .5 hacia arriba sea exacto.
   let sum = 0n;
   for (const { calificacion } of evaluations) {
     if (calificacion === null || calificacion.trim() === "") {
@@ -60,12 +62,14 @@ export function calculateFinal(
     const wholePart = BigInt(match[1]);
     const fractionalPart = BigInt((match[2] ?? "").padEnd(6, "0"));
     const value = wholePart * 1000000n + fractionalPart;
+    // Tope de 100.000000 en la escala interna (100 * 1e6).
     if (value > 100000000n) return pending("calificaciones_invalidas");
 
     sum += value;
   }
 
-  // Divide entre cuatro y redondea los .5 hacia arriba sin error binario.
+  // Divide entre cuatro y redondea los .5 hacia arriba sin error binario:
+  // sumar 2e6 equivale a sumar 0.5 antes de dividir por 4 (4 * 1e6).
   const result = Number((sum + 2000000n) / 4000000n);
 
   return {

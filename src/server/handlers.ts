@@ -74,6 +74,8 @@ export async function handleLogin(req: Request): Promise<Response> {
       );
     }
 
+    // Límites de longitud: email según RFC 5321, password acotada para evitar
+    // payloads abusivos hacia el SII.
     const { email, password } = body;
     if (
       typeof email !== "string" ||
@@ -127,6 +129,8 @@ export async function handleLogin(req: Request): Promise<Response> {
       isHttps
     );
 
+    // ~3800 bytes es el límite práctico de cabeceras en navegadores;
+    // si la cookie cifrada excede, se rechaza la sesión en lugar de truncarla.
     if (cookieHeader.length > 3800) {
       throw new AppError(
         502,
@@ -169,6 +173,7 @@ export async function handleSession(req: Request): Promise<Response> {
       session.token
     );
     const student = normalizeStudentProfile(rawStudent);
+    // Defensa contra tokens que apunten a otro estudiante distinto al de la sesión.
     if (student.numero_control !== session.numero_control) {
       throw new AuthenticationError(
         "SESSION_IDENTITY_MISMATCH",
@@ -244,6 +249,7 @@ export async function handleStudent(req: Request): Promise<Response> {
     );
 
     const student = normalizeStudentProfile(rawData);
+    // Verificación de identidad: el perfil del SII debe coincidir con la sesión.
     if (student.numero_control !== session.numero_control) {
       throw new AuthenticationError(
         "SESSION_IDENTITY_MISMATCH",
@@ -401,6 +407,7 @@ export async function handleDatabaseCheck(req: Request): Promise<Response> {
   const configuredToken = getEnvVar("DATABASE_CHECK_TOKEN")?.trim();
   const rawExpiresAt = getEnvVar("DATABASE_CHECK_EXPIRES_AT");
 
+  // Devolver 404 (no 401/403) para no revelar la existencia del endpoint.
   const notFoundResponse = () =>
     Response.json(
       {
@@ -467,6 +474,7 @@ export async function handleDatabaseCheck(req: Request): Promise<Response> {
   // 4. Ejecución del diagnóstico protegido sin exponer credenciales ni datos sensibles
   try {
     const result = await checkDatabase();
+    // Se exige que las tres operaciones (read, write, rollback) sean exitosas.
     if (!result.rollback || !result.read || !result.write) {
       return Response.json(
         {

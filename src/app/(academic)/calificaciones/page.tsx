@@ -8,6 +8,7 @@ import {
   periodLabel,
 } from "@/lib/academic-presentation";
 import type { GradesPeriodDTO } from "@/types/normalizers";
+// Motivos por los que el cálculo local no produce un resultado final.
 const reasons = {
   parciales_incompletos: "Faltan parciales",
   numeracion_invalida: "Numeración de parciales no compatible",
@@ -18,6 +19,7 @@ export default function GradesPage() {
   const resource = useResource<GradesPeriodDTO[]>("/api/grades");
   const [query, setQuery] = useState("");
   const [period, setPeriod] = useState("");
+  // Aplanamos periodo y materia para filtrar y mostrar cada combinación como fila.
   const rows = (resource.data ?? [])
     .flatMap((group, i) =>
       group.materias.map((subject, j) => ({
@@ -75,6 +77,7 @@ export default function GradesPage() {
               onChange={(e) => setPeriod(e.target.value)}
             >
               <option value="">Todos los periodos</option>
+              {/* El valor es el índice del grupo, no la clave del periodo. */}
               {resource.data?.map((group, i) => (
                 <option key={i} value={i}>
                   {periodLabel(group.periodo)}
@@ -137,6 +140,7 @@ export default function GradesPage() {
                         );
                         return (
                           <td key={n}>
+                            {/* Si hay evaluaciones repetidas, se muestran todas. */}
                             {values.length
                               ? values
                                   .map((e) =>
@@ -164,6 +168,8 @@ export default function GradesPage() {
                           (e) =>
                             ![1, 2, 3, 4].includes(e.numero_calificacion ?? -1),
                         ) && (
+                          // Las evaluaciones fuera del rango de cuatro parciales
+                          // se muestran aparte y no forman parte del cálculo final.
                           <details>
                             <summary>
                               Evaluaciones adicionales recibidas

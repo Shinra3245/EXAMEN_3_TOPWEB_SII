@@ -7,6 +7,7 @@ import {
 } from "./resource-snapshot";
 
 export function useResource<T>(path: string) {
+  // La identidad cambia con la ruta para separar estados de recursos distintos.
   const resourceKey = useMemo(() => Symbol(path), [path]);
   const [snapshot, setSnapshot] = useState<ResourceSnapshot<T>>(() => ({
     key: resourceKey,
@@ -18,6 +19,7 @@ export function useResource<T>(path: string) {
   const controller = useRef<AbortController | null>(null);
 
   const load = useCallback(async () => {
+    // Solo se conserva activa la petición más reciente de este hook.
     controller.current?.abort();
     const request = new AbortController();
     controller.current = request;
@@ -44,6 +46,7 @@ export function useResource<T>(path: string) {
       setSnapshot((current) => ({
         key: resourceKey,
         path,
+        // No mostrar datos de una ruta anterior si esta petición falla.
         data: current.key === resourceKey ? current.data : null,
         loading: false,
         error,
@@ -63,6 +66,7 @@ export function useResource<T>(path: string) {
   }, [load, path, resourceKey]);
 
   useEffect(() => {
+    // Permite cancelar la carga inicial si el efecto se limpia de inmediato.
     const initialLoad = setTimeout(() => {
       void load();
     }, 0);

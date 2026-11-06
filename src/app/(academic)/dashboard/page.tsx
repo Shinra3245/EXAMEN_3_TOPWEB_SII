@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useResource } from "@/hooks/use-resource";
 import { ResourceState } from "@/components/resource-state";
 import type { StudentProfileDTO } from "@/types/normalizers";
+// Etiquetas legibles para las claves recibidas desde /api/student.
+// Se conserva el typo percentaje_avance_cursando del contrato del SII.
 const labels: Record<string, string> = {
   creditos_acumulados: "Créditos acumulados",
   promedio_ponderado: "Promedio ponderado",
@@ -19,6 +21,7 @@ const labels: Record<string, string> = {
 export default function DashboardPage() {
   const resource = useResource<StudentProfileDTO>("/api/student");
   const [photoFailed, setPhotoFailed] = useState(false);
+  // Cambiar la versión modifica la URL de la foto para solicitarla de nuevo.
   const [photoVersion, setPhotoVersion] = useState(0);
   return (
     <>

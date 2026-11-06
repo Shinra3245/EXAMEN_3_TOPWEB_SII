@@ -18,6 +18,7 @@ interface ApiResponse<T> {
   };
 }
 
+// Generación de sesión para descartar respuestas de sesiones anteriores.
 let epoch = 0;
 
 export function advanceApiEpoch(): number {
@@ -28,6 +29,7 @@ export async function apiRequest<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  // En SSR se usa un origen ficticio solo para validar la ruta relativa.
   const base =
     typeof window === "undefined"
       ? "https://same-origin.invalid"
@@ -44,6 +46,7 @@ export async function apiRequest<T>(
     );
   }
 
+  // Acepta únicamente rutas API del mismo origen, sin fragmentos ni backslashes.
   if (
     !path.startsWith("/api/") ||
     path.includes("\\") ||
@@ -76,6 +79,7 @@ export async function apiRequest<T>(
       redirect: "error",
     });
   } catch (error) {
+    // Los abortos se propagan para que el consumidor no los trate como fallos de red.
     if (
       options?.signal?.aborted ||
       (error instanceof Error && error.name === "AbortError")
@@ -101,6 +105,7 @@ export async function apiRequest<T>(
     throw new DOMException("Request aborted", "AbortError");
   }
 
+  // Un 401 protegido avisa al proveedor de sesión, salvo si ya cambió la generación.
   if (
     response.status === 401 &&
     url.pathname !== "/api/auth/login" &&
@@ -120,10 +125,12 @@ export async function apiRequest<T>(
     );
   }
 
+  // Descarta la respuesta si login o logout ocurrió mientras esperaba el servidor.
   if (requestEpoch !== epoch) {
     throw new DOMException("Session changed", "AbortError");
   }
 
+  // El cliente solo acepta el sobre de éxito definido por la API.
   if (body?.success !== true || !Object.hasOwn(body, "data")) {
     throw new ApiClientError(
       "La respuesta del servicio no es válida. Intenta de nuevo.",

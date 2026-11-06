@@ -6,6 +6,7 @@ export async function readBoundedText(
   maxBytes: number,
 ): Promise<string> {
   const contentLength = response.headers.get("content-length");
+  // Rechazo temprano cuando el tamaño declarado ya supera el límite.
   if (contentLength && Number(contentLength) > maxBytes) {
     throw new UpstreamError(
       502,
@@ -27,6 +28,7 @@ export async function readBoundedText(
 
       byteCount += value.byteLength;
       if (byteCount > maxBytes) {
+        // También se limita el stream cuando Content-Length falta o no es fiable.
         await reader.cancel();
         throw new UpstreamError(
           502,
@@ -38,6 +40,7 @@ export async function readBoundedText(
       chunks.push(value);
     }
   } finally {
+    // Libera el reader tanto al terminar como si la lectura falla.
     reader.releaseLock();
   }
 
