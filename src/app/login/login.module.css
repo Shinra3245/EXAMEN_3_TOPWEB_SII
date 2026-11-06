@@ -71,7 +71,7 @@
   border-radius: 0;
   background: var(--login-surface);
   box-shadow: 8px 8px 0 var(--login-border);
-  animation: cardEnter 420ms var(--login-ease) both;
+  animation: cardDraw 760ms steps(16, end) both;
 }
 
 @keyframes cardEnter {
@@ -355,6 +355,44 @@
   87.5%, 100% { background-position: 100% 0; }
 }
 
+/*
+ * Efecto "se dibuja": el recuadro se traza por barrido de píxeles (steps) y
+ * después cada elemento aparece en cascada con el mismo paso discreto.
+ */
+@keyframes cardDraw {
+  from { clip-path: inset(0 -12px 100% -12px); }
+  to { clip-path: inset(0 -12px -12px -12px); }
+}
+
+@keyframes pixelIn {
+  from { clip-path: inset(-4px 100% -12px -4px); }
+  to { clip-path: inset(-4px -12px -12px -4px); }
+}
+
+@keyframes spriteDraw {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.loginHeader > *,
+.fieldset > *,
+.securityNote {
+  animation: pixelIn 380ms steps(8, end) both;
+}
+
+.loginHeader > :nth-child(1) { animation-delay: 560ms; }
+.loginHeader > :nth-child(2) { animation-delay: 680ms; }
+.loginHeader > :nth-child(3) { animation-delay: 800ms; }
+.fieldset > :nth-child(1) { animation-delay: 900ms; }
+.fieldset > :nth-child(2) { animation-delay: 1060ms; }
+.fieldset > :nth-child(3) { animation-delay: 1220ms; }
+.fieldset > :nth-child(4) { animation-delay: 1340ms; }
+.securityNote { animation-delay: 1500ms; }
+
+.mascot {
+  animation: spriteDraw 900ms steps(14, end) 700ms both;
+}
+
 @media (max-width: 640px) {
   .banner {
     height: 128px;
@@ -458,6 +496,10 @@
   .showPasswordButton,
   .secondaryButton,
   .loginCard,
+  .loginHeader > *,
+  .fieldset > *,
+  .securityNote,
+  .mascot,
   .notice,
   .error,
   .field input,
