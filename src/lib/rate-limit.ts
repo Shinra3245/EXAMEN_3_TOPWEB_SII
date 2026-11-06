@@ -1,6 +1,7 @@
 import "server-only";
 import { requestEnvStorage } from "@/config/env";
 import { AppError } from "./errors";
+import { withDatabase } from "./db";
 
 /** Binding de Cloudflare Rate Limiting (ver `ratelimits` en wrangler.jsonc). */
 interface RateLimitBinding {
@@ -47,12 +48,10 @@ function allowInMemory(key: string, limit: number): boolean {
 }
 
 /**
- * Un intento se permite solo si lo permiten AMBOS contadores:
- * - el binding de Cloudflare, compartido entre instancias pero aproximado: sus
- *   contadores son eventualmente consistentes y puede dejar pasar ráfagas;
- * - el contador en memoria, exacto pero solo dentro de una misma instancia.
- * Juntos cubren lo que cada uno deja pasar. Para un tope global y estricto en el
- * borde conviene además una regla de WAF Rate Limiting en el panel de Cloudflare.
+ * Un intento se permite solo si lo permiten TODOS los contadores:
+ * - memoria: exacto, pero solo dentro de una misma instancia del Worker;
+ * - binding de Cloudflare: compartido, pero aproximado (deja pasar ráfagas).
+ * La base de datos (`dbAllows`) es el contador compartido y exacto; ver más abajo.
  */
 async function allow(
   bindingName: "LOGIN_IP_LIMITER" | "LOGIN_ACCOUNT_LIMITER",
@@ -68,6 +67,27 @@ async function allow(
     return success && memoryAllowed;
   }
   return memoryAllowed;
+}
+
+/**
+ * Contador compartido y exacto en Postgres (`app.register_login_attempt`, migración 0005):
+ * todas las instancias y ubicaciones del Worker lo ven igual. Si la base no está
+ * disponible o la migración aún no se aplicó, NO se bloquea el inicio de sesión
+ * (fallar abierto): los otros contadores siguen activos y un fallo de la base no
+ * debe dejar a todos los alumnos sin acceso.
+ */
+async function dbAllows(ipKey: string, accountKey: string): Promise<boolean> {
+  try {
+    return await withDatabase(async (client) => {
+      const { rows } = await client.query(
+        "SELECT app.register_login_attempt($1, $2, $3) AS ip_ok, app.register_login_attempt($4, $5, $6) AS account_ok",
+        [`ip:${ipKey}`, IP_LIMIT, WINDOW_MS / 1000, `acct:${accountKey}`, ACCOUNT_LIMIT, WINDOW_MS / 1000],
+      );
+      return rows[0]?.ip_ok === true && rows[0]?.account_ok === true;
+    });
+  } catch {
+    return true;
+  }
 }
 
 /** El correo no se guarda en claro en el limitador: solo su huella SHA-256. */
@@ -88,8 +108,10 @@ export async function enforceLoginRateLimit(req: Request, email: string): Promis
 
   const ipAllowed = await allow("LOGIN_IP_LIMITER", ip, IP_LIMIT);
   const accountAllowed = await allow("LOGIN_ACCOUNT_LIMITER", account, ACCOUNT_LIMIT);
+  // La base solo se consulta si los demás ya lo permiten: un intento bloqueado no cuenta ahí.
+  const sharedAllowed = ipAllowed && accountAllowed ? await dbAllows(ip, account) : false;
 
-  if (!ipAllowed || !accountAllowed) {
+  if (!ipAllowed || !accountAllowed || !sharedAllowed) {
     throw new AppError(
       429,
       "TOO_MANY_LOGIN_ATTEMPTS",
