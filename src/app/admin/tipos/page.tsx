@@ -132,7 +132,7 @@ export default function AdminTiposPage() {
       {successMsg && (
         <div
           role="status"
-          className="p-3 bg-green-50 text-green-800 border border-green-200 rounded font-semibold text-sm flex items-center gap-2"
+          className="notice-box notice-success"
         >
           <IconCheck size={18} className="text-green-600" />
           <span>{successMsg}</span>
@@ -141,7 +141,7 @@ export default function AdminTiposPage() {
       {errorMsg && (
         <div
           role="alert"
-          className="p-3 bg-red-50 text-red-800 border border-red-200 rounded font-semibold text-sm flex items-center gap-2"
+          className="notice-box notice-error"
         >
           <IconAlert size={18} className="text-red-600" />
           <span>{errorMsg}</span>

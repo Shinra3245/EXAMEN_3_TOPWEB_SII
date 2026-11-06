@@ -303,8 +303,8 @@ export default function SchedulePage() {
                       <tbody>
                         {rows.map(({ subject, session, period, key }) => (
                           <tr key={key}>
-                            <td className="whitespace-nowrap font-mono font-bold text-sm">
-                              {session.inicio} – {session.fin}
+                            <td className="whitespace-nowrap">
+                              <span className="tag tag-time">{session.inicio} – {session.fin}</span>
                             </td>
                             <th scope="row">
                               <span className="font-bold block">
@@ -316,15 +316,15 @@ export default function SchedulePage() {
                             </th>
                             <td className="font-semibold">
                               {session.salon ? (
-                                <span className="inline-block px-2 py-0.5 rounded font-mono text-sm bg-[var(--surface-secondary)] border border-[var(--surface-border)]">
+                                <span className="tag tag-room">
                                   {session.salon}
                                 </span>
                               ) : (
                                 <span className="text-muted text-xs">No disponible</span>
                               )}
                             </td>
-                            <td className="text-xs text-muted whitespace-nowrap">
-                              {periodLabel(period)}
+                            <td className="whitespace-nowrap">
+                              <span className="tag tag-period">{periodLabel(period)}</span>
                             </td>
                             <td>
                               {session.salon ? (
@@ -380,26 +380,26 @@ export default function SchedulePage() {
               <span>Reportar falla en aula</span>
             </h2>
 
-            <div className="p-3 bg-[var(--surface-secondary)] border border-[var(--surface-border)] rounded text-xs flex flex-col gap-1">
+            <div className="info-card">
               <p>
-                <strong>Salón:</strong> {activeSession.session.salon}
+                <strong>Salón</strong> <span className="tag tag-room">{activeSession.session.salon}</span>
               </p>
               <p>
-                <strong>Materia:</strong> {activeSession.subject.nombre_materia} (
-                {activeSession.subject.clave_materia})
+                <strong>Materia</strong> <span className="info-subject">{activeSession.subject.nombre_materia}</span>{" "}
+                <span className="tag tag-code">{activeSession.subject.clave_materia}</span>
               </p>
               <p>
-                <strong>Horario:</strong> {dayLabels[activeSession.session.dia]}{" "}
-                {activeSession.session.inicio} - {activeSession.session.fin}
+                <strong>Horario</strong> <span className="tag tag-day">{dayLabels[activeSession.session.dia]}</span>{" "}
+                <span className="tag tag-time">{activeSession.session.inicio} - {activeSession.session.fin}</span>
               </p>
               <p>
-                <strong>Periodo:</strong> {periodLabel(activeSession.period)}
+                <strong>Periodo</strong> <span className="tag tag-period">{periodLabel(activeSession.period)}</span>
               </p>
             </div>
 
             {reportSuccess ? (
               <div role="status" className="flex flex-col gap-4">
-                <div className="p-3 bg-green-50 border border-green-200 text-green-800 rounded font-semibold text-sm flex items-center gap-2">
+                <div className="notice-box notice-success">
                   <IconCheck size={18} className="text-green-600" />
                   <span>{reportSuccess}</span>
                 </div>
@@ -424,7 +424,7 @@ export default function SchedulePage() {
                 {reportError && (
                   <div
                     role="alert"
-                    className="p-3 bg-red-50 border border-red-200 text-red-800 rounded font-semibold text-sm flex items-center gap-2"
+                    className="notice-box notice-error"
                   >
                     <IconAlert size={18} className="text-red-600" />
                     <span>{reportError}</span>
