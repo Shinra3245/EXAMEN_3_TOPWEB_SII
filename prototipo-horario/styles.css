@@ -1,0 +1,493 @@
+:root {
+  --color-page: #f4f6fa;
+  --color-panel: #ffffff;
+  --color-text: #26364a;
+  --color-muted: #718096;
+  --color-border: #e3eaf2;
+  --color-blue: #2877c7;
+  --color-blue-soft: #e7f5fb;
+  --color-violet: #8062cc;
+  --color-violet-soft: #f0ebfb;
+  --color-orange: #d89432;
+  --color-orange-soft: #fff4e2;
+  --color-green: #39a786;
+  --color-green-soft: #e6f7f1;
+  --hour-height: 48px;
+  --font-ui: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  line-height: 1.45;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+input,
+select,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible,
+.calendar-scroll:focus-visible {
+  outline: 3px solid #8bbcf0;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 8px 16px;
+  background: var(--color-blue);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+}
+
+.topbar {
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topbar__content {
+  width: min(1480px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  color: #244c79;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.main-nav {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.main-nav__link {
+  padding: 8px 12px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.main-nav__link:hover {
+  color: var(--color-text);
+  background: #f1f5f9;
+}
+
+.main-nav__link--active {
+  color: var(--color-blue);
+  background: #edf6fc;
+}
+
+.main-nav__link--active:hover {
+  color: var(--color-blue);
+  background: #e2f0fa;
+}
+
+.student-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.student-summary__name {
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.student-summary__control {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.page-shell {
+  width: min(1480px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 22px 0 48px;
+}
+
+.page-heading {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 6px;
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.page-heading__description {
+  margin-bottom: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  max-width: 640px;
+}
+
+/* Selector de periodo "Filtrar" a la derecha del heading */
+.period-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 14px;
+  background: #edf6fc;
+  border: 1px solid #dbeaf6;
+  border-radius: 10px;
+}
+
+.period-selector__label {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.period-selector__select {
+  min-height: 34px;
+  padding: 4px 10px;
+  color: #285b8a;
+  background: #fff;
+  border: 1px solid #d8e1ea;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.period-selector__select:hover {
+  border-color: #aebfd0;
+}
+
+.schedule-panel {
+  min-width: 0;
+  padding: 18px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgb(36 64 92 / 4%);
+}
+
+.calendar-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  scrollbar-color: #b7c9da #f4f7fa;
+  scrollbar-width: thin;
+}
+
+.calendar {
+  min-width: 860px;
+  background: #fff;
+}
+
+.calendar-header,
+.calendar-body {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.calendar-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 54px;
+  background: #f9fbfd;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calendar-header__days,
+.week-columns {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+}
+
+.calendar-header__time,
+.calendar-day-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: #64758a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.calendar-day-heading {
+  min-height: 54px;
+  flex-direction: column;
+  gap: 3px;
+  border-left: 1px solid var(--color-border);
+}
+
+/* Ocho horas (8:00 a 16:00) */
+.time-axis,
+.day-column {
+  position: relative;
+  height: calc(8 * var(--hour-height));
+}
+
+.time-axis {
+  background: #fcfdfe;
+}
+
+.time-label {
+  position: absolute;
+  right: 8px;
+  left: 0;
+  padding-top: 5px;
+  color: #77869a;
+  font-size: 10px;
+  text-align: right;
+  transform: translateY(-1px);
+}
+
+.time-label--last {
+  top: calc(8 * var(--hour-height) - 18px) !important;
+}
+
+.week-columns {
+  min-width: 0;
+}
+
+.day-column {
+  min-width: 0;
+  border-left: 1px solid var(--color-border);
+}
+
+.hour-line {
+  height: var(--hour-height);
+  border-bottom: 1px solid #edf1f5;
+}
+
+.hour-line:nth-child(2n) {
+  border-bottom-color: #e5ebf1;
+}
+
+.class-card {
+  position: absolute;
+  z-index: 1;
+  right: 4px;
+  left: 4px;
+  overflow: hidden;
+  padding: 4px 5px 4px 7px;
+  border-left: 3px solid;
+  border-radius: 5px;
+  font-size: 8px;
+  line-height: 1.15;
+}
+
+.class-card--blue {
+  color: #28648a;
+  background: var(--color-blue-soft);
+  border-color: #48a7cf;
+}
+
+.class-card--violet {
+  color: #6650a2;
+  background: var(--color-violet-soft);
+  border-color: #8a70d5;
+}
+
+.class-card--orange {
+  color: #936523;
+  background: var(--color-orange-soft);
+  border-color: #dfa33d;
+}
+
+.class-card--green {
+  color: #307d68;
+  background: var(--color-green-soft);
+  border-color: #4eb896;
+}
+
+.class-card__time {
+  margin-bottom: 3px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.class-card h3 {
+  margin-bottom: 3px;
+  font-size: 9px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.class-card p {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.class-card__period {
+  margin-top: 4px !important;
+  font-weight: 700;
+}
+
+/* Tarjetas compactas (sesiones de hasta 60 min): solo hora + materia */
+.class-card--compact p:not(.class-card__time) {
+  display: none;
+}
+
+.class-card--compact h3 {
+  margin-bottom: 0;
+  -webkit-line-clamp: 2;
+}
+
+.empty-state {
+  margin: 14px 0 0;
+  padding: 18px;
+  color: var(--color-muted);
+  background: #f8fafc;
+  border: 1px dashed #cbd7e3;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.schedule-status {
+  min-height: 18px;
+  margin: 10px 2px 0;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 780px) {
+  .topbar__content {
+    width: min(100% - 28px, 1480px);
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .topbar__left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .brand {
+    font-size: 17px;
+  }
+
+  .main-nav__link {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .student-summary {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .student-summary__name {
+    font-size: 12px;
+  }
+
+  .student-summary__control {
+    font-size: 11px;
+  }
+
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .period-selector {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar__content,
+  .page-shell {
+    width: min(100% - 28px, 1480px);
+  }
+
+  .page-shell {
+    padding-top: 20px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .schedule-panel {
+    padding: 13px;
+  }
+
+  .calendar {
+    min-width: 860px;
+  }
+}

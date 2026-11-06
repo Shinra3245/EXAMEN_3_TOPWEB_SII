@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Horario del alumno en el portal académico."
+    />
+    <title>Horario | Portal académico</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#inicio">Saltar al contenido principal</a>
+
+    <header class="topbar">
+      <div class="topbar__content">
+        <div class="topbar__left">
+          <a class="brand" href="#inicio" aria-label="Portal académico, inicio">
+            Portal académico
+          </a>
+
+          <nav class="main-nav" aria-label="Navegación principal">
+            <a class="main-nav__link" href="#dashboard">Dashboard</a>
+            <a class="main-nav__link" href="#calificaciones">Calificaciones</a>
+            <a class="main-nav__link" href="#kardex">Kardex</a>
+            <a
+              class="main-nav__link main-nav__link--active"
+              href="#horario"
+              aria-current="page"
+            >
+              Horario
+            </a>
+          </nav>
+        </div>
+
+        <div class="student-summary" aria-label="Datos del alumno">
+          <span class="student-summary__name">ANDRES MONJARAS ORTEGA</span>
+          <span class="student-summary__control">22030873</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="inicio" class="page-shell">
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">Horario</h1>
+          <p class="page-heading__description">
+            Lista por día y hora. Aulas y franjas se muestran únicamente cuando
+            el SII las proporciona.
+          </p>
+        </div>
+
+        <div class="period-selector">
+          <label class="period-selector__label" for="periodFilter">Filtrar</label>
+          <select id="periodFilter" name="period" class="period-selector__select">
+            <option value="26/2 2026" selected>
+              Agosto - Diciembre 2026 · 26/2 · 2026
+            </option>
+            <option value="26/1 2026">
+              Enero - Junio 2026 · 26/1 · 2026
+            </option>
+            <option value="">Todos los periodos</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="schedule-panel" aria-label="Horario de clases">
+        <div
+          class="calendar-scroll"
+          tabindex="0"
+          aria-label="Horario semanal; desplázate horizontalmente para ver todos los días"
+        >
+          <div class="calendar" id="calendar">
+            <div class="calendar-header" id="calendarHeader"></div>
+
+            <div class="calendar-body">
+              <div class="time-axis" id="timeAxis" aria-hidden="true"></div>
+              <div class="week-columns" id="weekColumns"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="empty-state" id="emptyState" hidden>
+          No hay sesiones registradas para el periodo seleccionado.
+        </p>
+
+        <p
+          class="schedule-status"
+          id="scheduleStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </section>
+    </main>
+  </body>
+</html>
