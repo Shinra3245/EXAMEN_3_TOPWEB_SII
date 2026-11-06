@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useVisualTheme } from "@/components/visual-theme";
 
 /** Modal nativo: aísla el foco y lo devuelve al control que abrió el diálogo. */
 export function Modal({
@@ -15,12 +16,14 @@ export function Modal({
   dismissible?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const visual = useVisualTheme();
 
   useEffect(() => {
     const dialog = ref.current;
-    const opener = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     if (dialog && !dialog.open) dialog.showModal();
     return () => {
       if (dialog?.open) dialog.close();
@@ -34,6 +37,9 @@ export function Modal({
     <dialog
       ref={ref}
       aria-labelledby={titleId}
+      data-visual-modal="true"
+      data-visual-style={visual.style}
+      data-visual-theme={visual.theme}
       className="app-modal m-auto w-full max-w-xl border-0 bg-transparent p-4 backdrop:bg-black/50"
       onKeyDown={(event) => {
         if (event.key !== "Tab") return;

@@ -12,6 +12,11 @@ import type {
   ReportEstado,
   ReportPrioridad,
 } from "@/types/api";
+import {
+  IconAdminReportes,
+  IconCheck,
+  IconAlert,
+} from "@/components/visual-icons";
 
 const VALID_ESTADOS: ReportEstado[] = [
   "recibido",
@@ -46,14 +51,18 @@ export default function AdminReportsPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   if (status === "loading") {
-    return <p>Cargando perfil...</p>;
+    return (
+      <div className="visual-card p-8 text-center text-muted">
+        <p className="font-semibold">Cargando perfil administrativo...</p>
+      </div>
+    );
   }
 
   if (!esAdmin) {
     return (
-      <section role="alert" className="p-8 text-center">
+      <section role="alert" className="visual-card p-8 text-center border-red-300">
         <h1 className="text-xl font-bold text-red-700">Acceso no autorizado</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted">
           Esta sección está restringida exclusivamente a administradores
           designados en la plataforma.
         </p>
@@ -124,76 +133,83 @@ export default function AdminReportsPage() {
   const reports = reportsResource.data ?? [];
 
   return (
-    <div className="admin-report-page">
-      <header className="report-page-header mb-6">
-          <h1 className="text-2xl font-bold">
+    <div className="admin-reports-view flex flex-col gap-6">
+      <header>
+        <div className="flex items-center gap-3">
+          <IconAdminReportes size={26} className="text-blue-600" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Gestión de reportes (Administrador)
           </h1>
-        <p className="text-gray-600 mt-1">
+        </div>
+        <p className="text-sm text-muted mt-1 max-w-2xl">
           Bandeja de administración técnica para revisión, asignación de
           prioridad, cambio de estados y trazabilidad de aulas.
         </p>
       </header>
 
       {successMsg && (
-        <p
+        <div
           role="status"
-          className="feedback feedback-success mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
+          className="p-3 bg-green-50 text-green-800 border border-green-200 rounded font-semibold text-sm flex items-center gap-2"
         >
-          {successMsg}
-        </p>
+          <IconCheck size={18} className="text-green-600" />
+          <span>{successMsg}</span>
+        </div>
       )}
 
       {/* Resumen de métricas y salones más afectados */}
       {summary && (
         <section
           aria-labelledby="summary-heading"
-          className="admin-report-summary mb-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          <div className="summary-card border border-gray-200 rounded p-4 bg-gray-50">
-            <h2 id="summary-heading" className="text-base font-bold mb-3">
-              Resumen de reportes
-            </h2>
-            <p className="text-2xl font-extrabold text-blue-700">
-              {summary.total_reportes} reportes totales
-            </p>
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-              <div className="summary-chip summary-chip-received p-2 bg-yellow-100 rounded">
+          <div className="visual-card p-5 flex flex-col justify-between">
+            <div>
+              <h2 id="summary-heading" className="text-base font-bold mb-2">
+                Resumen de reportes
+              </h2>
+              <p className="text-3xl font-black text-blue-700">
+                {summary.total_reportes} reportes totales
+              </p>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-yellow-100 text-yellow-900 rounded font-semibold">
                 Recibidos: <strong>{summary.por_estado.recibido || 0}</strong>
               </div>
-              <div className="summary-chip summary-chip-review p-2 bg-blue-100 rounded">
+              <div className="p-2 bg-blue-100 text-blue-900 rounded font-semibold">
                 En revisión:{" "}
                 <strong>{summary.por_estado.en_revision || 0}</strong>
               </div>
-              <div className="summary-chip summary-chip-resolved p-2 bg-green-100 rounded">
+              <div className="p-2 bg-green-100 text-green-900 rounded font-semibold">
                 Resueltos: <strong>{summary.por_estado.resuelto || 0}</strong>
               </div>
-              <div className="summary-chip summary-chip-closed p-2 bg-gray-200 rounded">
+              <div className="p-2 bg-gray-200 text-gray-800 rounded font-semibold">
                 Cerrados: <strong>{summary.por_estado.cerrado || 0}</strong>
               </div>
-              <div className="summary-chip summary-chip-discarded p-2 bg-red-100 rounded">
+              <div className="p-2 bg-red-100 text-red-900 rounded font-semibold">
                 Descartados:{" "}
                 <strong>{summary.por_estado.descartado || 0}</strong>
               </div>
             </div>
           </div>
 
-          <div className="summary-card border border-gray-200 rounded p-4 bg-gray-50">
-            <h2 className="text-base font-bold mb-2">
+          <div className="visual-card p-5">
+            <h2 className="text-base font-bold mb-3">
               Salones con más fallas reportadas
             </h2>
             {summary.salones_frecuentes.length === 0 ? (
-              <p className="text-xs text-gray-500">Sin reportes registrados aún.</p>
+              <p className="text-xs text-muted">Sin reportes registrados aún.</p>
             ) : (
-              <ul className="text-xs space-y-1">
+              <ul className="text-xs space-y-2 list-none p-0 m-0">
                 {summary.salones_frecuentes.slice(0, 5).map((room) => (
                   <li
                     key={room.salon}
-                    className="flex justify-between border-b border-gray-200 py-1"
+                    className="flex justify-between items-center border-b border-[var(--surface-border)] pb-1.5"
                   >
-                    <span className="font-semibold">Aula {room.salon}</span>
-                    <span>
-                      {room.total_reportes} total ({room.abiertos} abiertos,{" "}
+                    <span className="font-bold text-sm">Aula {room.salon}</span>
+                    <span className="text-muted">
+                      <strong>{room.total_reportes}</strong> total ({room.abiertos} abiertos,{" "}
                       {room.resueltos} resueltos)
                     </span>
                   </li>
@@ -212,17 +228,18 @@ export default function AdminReportsPage() {
           void summaryResource.refresh();
         }}
       >
-        <section
-          className="admin-report-inbox"
-          aria-labelledby="bandeja-heading"
-        >
-          <h2 id="bandeja-heading" className="text-lg font-bold mb-4">
-            Bandeja de atención ({reports.length})
-          </h2>
+        <section aria-labelledby="bandeja-heading">
+          <div className="flex items-center justify-between mb-2">
+            <h2 id="bandeja-heading" className="text-lg font-bold">
+              Bandeja de atención ({reports.length})
+            </h2>
+          </div>
 
           <div className="table-scroll">
             <table>
-              <caption>Lista completa de reportes de aulas con datos de auditoría</caption>
+              <caption>
+                Lista completa de reportes de aulas con datos de auditoría
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Aula</th>
@@ -239,41 +256,50 @@ export default function AdminReportsPage() {
                 {reports.map((report) => (
                   <tr key={report.id}>
                     <td>
-                      <strong>{report.salon}</strong>
-                      <br />
-                      <small>{report.clave_materia}</small>
+                      <span className="font-bold block">
+                        Aula {report.salon}
+                      </span>
+                      <small className="text-xs text-muted block font-mono">
+                        {report.clave_materia}
+                      </small>
                     </td>
-                    <td>{report.tipo_nombre}</td>
+                    <td className="text-sm">{report.tipo_nombre}</td>
                     <td>
-                      <span className="capitalize font-semibold">
+                      <span className={`report-status report-status-${report.estado}`}>
                         {report.estado.replace("_", " ")}
                       </span>
                     </td>
-                    <td>{report.prioridad || "-"}</td>
                     <td>
-                      <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">
+                      {report.prioridad ? (
+                        <span className="text-xs font-bold capitalize">
+                          {report.prioridad}
+                        </span>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </td>
+                    <td>
+                      <code className="text-xs px-1.5 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--surface-border)] font-mono">
                         {report.reporter_id || "No disponible"}
                       </code>
                     </td>
                     <td>
-                      {report.apoyos_conteo}
+                      <span className="font-bold">{report.apoyos_conteo}</span>
                       {report.apoyos_estudiantes &&
                         report.apoyos_estudiantes.length > 0 && (
-                          <div className="text-[10px] text-gray-500 max-w-xs truncate">
+                          <div className="text-[10px] text-muted max-w-xs truncate">
                             {report.apoyos_estudiantes.join(", ")}
                           </div>
                         )}
                     </td>
-                    <td>
-                      <small>
-                        {new Date(report.creado_en).toLocaleDateString("es-MX")}
-                      </small>
+                    <td className="text-xs text-muted whitespace-nowrap">
+                      {new Date(report.creado_en).toLocaleDateString("es-MX")}
                     </td>
                     <td>
                       <button
                         type="button"
                         onClick={() => openManageModal(report)}
-                        className="text-xs"
+                        className="btn-secondary text-xs"
                       >
                         Gestionar
                       </button>
@@ -293,12 +319,13 @@ export default function AdminReportsPage() {
           onDismiss={closeManageModal}
           dismissible={!updating}
         >
-          <div className="report-dialog w-full max-w-lg rounded border border-gray-300 bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-            <h2 id="manage-modal-title" className="text-xl font-bold mb-3">
-              Gestionar reporte: Aula {selectedReport.salon}
+          <div className="modal-dialog-panel">
+            <h2 id="manage-modal-title" className="modal-title">
+              <IconAdminReportes size={22} />
+              <span>Gestionar reporte: Aula {selectedReport.salon}</span>
             </h2>
 
-            <div className="report-session-summary mb-4 rounded bg-gray-50 p-3 text-xs border border-gray-200">
+            <div className="p-3 bg-[var(--surface-secondary)] border border-[var(--surface-border)] rounded text-xs flex flex-col gap-1">
               <p>
                 <strong>Tipo:</strong> {selectedReport.tipo_nombre}
               </p>
@@ -313,14 +340,18 @@ export default function AdminReportsPage() {
 
             <form onSubmit={handleUpdateSubmit} className="flex flex-col gap-4">
               {modalError && (
-                <p role="alert" className="text-sm font-semibold text-red-700">
-                  {modalError}
-                </p>
+                <div
+                  role="alert"
+                  className="p-3 bg-red-50 text-red-800 border border-red-200 rounded font-semibold text-sm flex items-center gap-2"
+                >
+                  <IconAlert size={18} className="text-red-600" />
+                  <span>{modalError}</span>
+                </div>
               )}
 
               <div>
-                <label htmlFor="nuevo-estado" className="block text-sm font-semibold mb-1">
-                  Estado:
+                <label htmlFor="nuevo-estado">
+                  Estado del reporte:
                 </label>
                 <select
                   id="nuevo-estado"
@@ -328,7 +359,7 @@ export default function AdminReportsPage() {
                   onChange={(e) =>
                     setNuevoEstado(e.target.value as ReportEstado)
                   }
-                  className="w-full"
+                  className="w-full mt-1"
                   required
                 >
                   {VALID_ESTADOS.map((st) => (
@@ -340,11 +371,8 @@ export default function AdminReportsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="nueva-prioridad"
-                  className="block text-sm font-semibold mb-1"
-                >
-                  Prioridad:
+                <label htmlFor="nueva-prioridad">
+                  Prioridad técnica asignada:
                 </label>
                 <select
                   id="nueva-prioridad"
@@ -352,7 +380,7 @@ export default function AdminReportsPage() {
                   onChange={(e) =>
                     setNuevaPrioridad(e.target.value as ReportPrioridad | "")
                   }
-                  className="w-full"
+                  className="w-full mt-1"
                 >
                   <option value="">Sin prioridad asignada</option>
                   <option value="baja">Baja</option>
@@ -362,10 +390,7 @@ export default function AdminReportsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="comentario-gestion"
-                  className="block text-sm font-semibold mb-1"
-                >
+                <label htmlFor="comentario-gestion">
                   Comentario de seguimiento (obligatorio):
                 </label>
                 <textarea
@@ -375,22 +400,24 @@ export default function AdminReportsPage() {
                   maxLength={1000}
                   onChange={(e) => setComentario(e.target.value)}
                   placeholder="Explica el avance, motivo de descarte o solución aplicada..."
-                  className="w-full"
+                  className="w-full mt-1"
                   required
                 />
               </div>
 
-              <div className="flex justify-end gap-2 mt-2">
+              <div className="flex justify-end gap-3 mt-2">
                 <button
                   type="button"
                   onClick={closeManageModal}
                   disabled={updating}
+                  className="btn-secondary"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={updating || !comentario.trim()}
+                  className="btn-primary"
                 >
                   {updating ? "Guardando..." : "Guardar cambios"}
                 </button>

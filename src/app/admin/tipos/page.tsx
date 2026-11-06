@@ -6,6 +6,11 @@ import { useResource } from "@/hooks/use-resource";
 import { ResourceState } from "@/components/resource-state";
 import { apiRequest, ApiClientError } from "@/lib/api-client";
 import type { FaultTypeDTO } from "@/types/api";
+import {
+  IconAdminTipos,
+  IconCheck,
+  IconAlert,
+} from "@/components/visual-icons";
 
 export default function AdminTiposPage() {
   const { esAdmin, status } = useAuth();
@@ -20,14 +25,18 @@ export default function AdminTiposPage() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   if (status === "loading") {
-    return <p>Cargando perfil...</p>;
+    return (
+      <div className="visual-card p-8 text-center text-muted">
+        <p className="font-semibold">Cargando perfil administrativo...</p>
+      </div>
+    );
   }
 
   if (!esAdmin) {
     return (
-      <section role="alert" className="p-8 text-center">
+      <section role="alert" className="visual-card p-8 text-center border-red-300">
         <h1 className="text-xl font-bold text-red-700">Acceso no autorizado</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted">
           Esta sección está restringida exclusivamente a administradores
           designados en la plataforma.
         </p>
@@ -54,9 +63,11 @@ export default function AdminTiposPage() {
           ...(editingId === null ? { activo: true } : { id: editingId }),
         }),
       });
-      setSuccessMsg(editingId === null
-        ? "Tipo de falla agregado correctamente."
-        : "Nombre del tipo de falla actualizado correctamente.");
+      setSuccessMsg(
+        editingId === null
+          ? "Tipo de falla agregado correctamente."
+          : "Nombre del tipo de falla actualizado correctamente."
+      );
       setNuevoNombre("");
       setEditingId(null);
       void typesResource.refresh();
@@ -104,64 +115,85 @@ export default function AdminTiposPage() {
   const types = typesResource.data ?? [];
 
   return (
-    <div className="admin-types-page">
-      <header className="report-page-header mb-6">
-        <h1 className="text-2xl font-bold">Catálogo de tipos de falla</h1>
-        <p className="text-gray-600 mt-1">
+    <div className="admin-types-view flex flex-col gap-6">
+      <header>
+        <div className="flex items-center gap-3">
+          <IconAdminTipos size={26} className="text-blue-600" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Catálogo de tipos de falla
+          </h1>
+        </div>
+        <p className="text-sm text-muted mt-1 max-w-2xl">
           Configuración administrativa del catálogo de opciones disponibles al
           reportar averías en aulas.
         </p>
       </header>
 
       {successMsg && (
-        <p
+        <div
           role="status"
-          className="feedback feedback-success mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded"
+          className="p-3 bg-green-50 text-green-800 border border-green-200 rounded font-semibold text-sm flex items-center gap-2"
         >
-          {successMsg}
-        </p>
+          <IconCheck size={18} className="text-green-600" />
+          <span>{successMsg}</span>
+        </div>
       )}
       {errorMsg && (
-        <p
+        <div
           role="alert"
-          className="feedback feedback-error mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded"
+          className="p-3 bg-red-50 text-red-800 border border-red-200 rounded font-semibold text-sm flex items-center gap-2"
         >
-          {errorMsg}
-        </p>
+          <IconAlert size={18} className="text-red-600" />
+          <span>{errorMsg}</span>
+        </div>
       )}
 
-      {/* Formulario para añadir nuevo tipo */}
+      {/* Formulario para añadir o editar tipo */}
       <section
         aria-labelledby="nuevo-tipo-heading"
-        className="admin-type-form controls mb-8"
+        className="visual-card p-5"
       >
         <h2 id="nuevo-tipo-heading" className="text-base font-bold mb-3">
-          {editingId === null ? "Agregar nuevo tipo de falla" : "Editar tipo de falla"}
+          {editingId === null
+            ? "Agregar nuevo tipo de falla"
+            : "Editar tipo de falla"}
         </h2>
         <form onSubmit={handleCreateType} className="flex flex-wrap gap-3 items-end">
-          <label className="flex flex-col text-sm font-medium flex-1 min-w-[240px]">
-            Nombre del tipo:
+          <label className="flex-1 min-w-[260px]">
+            <span>Nombre del tipo de falla:</span>
             <input
               ref={nameInput}
               type="text"
-              placeholder="Ej. Cortinas / Persianas, Iluminación"
+              placeholder="Ej. Cortinas / Persianas, Iluminación..."
               value={nuevoNombre}
               disabled={submitting}
               maxLength={100}
               onChange={(e) => setNuevoNombre(e.target.value)}
-              className="mt-1"
               required
             />
           </label>
-          <button type="submit" disabled={submitting || !nuevoNombre.trim()}>
-            {submitting ? "Guardando..." : editingId === null ? "Agregar al catálogo" : "Guardar nombre"}
+          <button
+            type="submit"
+            disabled={submitting || !nuevoNombre.trim()}
+            className="btn-primary"
+          >
+            {submitting
+              ? "Guardando..."
+              : editingId === null
+              ? "Agregar al catálogo"
+              : "Guardar nombre"}
           </button>
           {editingId !== null && (
-            <button type="button" disabled={submitting} onClick={() => {
-              setEditingId(null);
-              setNuevoNombre("");
-              setErrorMsg(null);
-            }}>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => {
+                setEditingId(null);
+                setNuevoNombre("");
+                setErrorMsg(null);
+              }}
+              className="btn-secondary"
+            >
               Cancelar edición
             </button>
           )}
@@ -175,14 +207,16 @@ export default function AdminTiposPage() {
           void typesResource.refresh();
         }}
       >
-        <section className="admin-types-table" aria-labelledby="catalogo-heading">
-          <h2 id="catalogo-heading" className="text-lg font-bold mb-3">
+        <section aria-labelledby="catalogo-heading">
+          <h2 id="catalogo-heading" className="text-lg font-bold mb-2">
             Tipos registrados ({types.length})
           </h2>
 
           <div className="table-scroll">
             <table>
-              <caption>Catálogo completo de fallas con estado activo/inactivo</caption>
+              <caption>
+                Catálogo completo de fallas con estado activo/inactivo
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">ID</th>
@@ -197,15 +231,13 @@ export default function AdminTiposPage() {
                   const isToggling = togglingId === type.id;
                   return (
                     <tr key={type.id}>
-                      <td>{type.id}</td>
+                      <td className="font-mono text-xs">{type.id}</td>
                       <td>
-                        <strong>{type.nombre}</strong>
+                        <strong className="text-main">{type.nombre}</strong>
                       </td>
                       <td>
                         <span
-                          className={`type-status ${
-                            type.activo ? "is-active" : "is-inactive"
-                          } inline-block px-2 py-0.5 text-xs font-semibold rounded ${
+                          className={`inline-block px-2.5 py-0.5 text-xs font-bold rounded-full ${
                             type.activo
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-200 text-gray-700"
@@ -214,43 +246,44 @@ export default function AdminTiposPage() {
                           {type.activo ? "Activo" : "Inactivo"}
                         </span>
                       </td>
-                      <td>
-                        <small>
-                          {type.creado_en
-                            ? new Date(type.creado_en).toLocaleDateString("es-MX")
-                            : "-"}
-                        </small>
+                      <td className="text-xs text-muted whitespace-nowrap">
+                        {type.creado_en
+                          ? new Date(type.creado_en).toLocaleDateString("es-MX")
+                          : "-"}
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          disabled={submitting || togglingId !== null}
-                          aria-label={`Editar tipo ${type.nombre}`}
-                          onClick={() => {
-                            setEditingId(type.id);
-                            setNuevoNombre(type.nombre);
-                            setErrorMsg(null);
-                            setSuccessMsg(null);
-                            nameInput.current?.focus();
-                          }}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleActivo(type)}
-                          disabled={togglingId !== null || submitting}
-                          className="text-xs"
-                          aria-label={`${
-                            type.activo ? "Desactivar" : "Activar"
-                          } tipo ${type.nombre}`}
-                        >
-                          {isToggling
-                            ? "Guardando..."
-                            : type.activo
-                            ? "Desactivar"
-                            : "Activar"}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={submitting || togglingId !== null}
+                            aria-label={`Editar tipo ${type.nombre}`}
+                            onClick={() => {
+                              setEditingId(type.id);
+                              setNuevoNombre(type.nombre);
+                              setErrorMsg(null);
+                              setSuccessMsg(null);
+                              nameInput.current?.focus();
+                            }}
+                            className="btn-secondary text-xs"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActivo(type)}
+                            disabled={togglingId !== null || submitting}
+                            className="btn-secondary text-xs"
+                            aria-label={`${
+                              type.activo ? "Desactivar" : "Activar"
+                            } tipo ${type.nombre}`}
+                          >
+                            {isToggling
+                              ? "Guardando..."
+                              : type.activo
+                              ? "Desactivar"
+                              : "Activar"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
