@@ -1,11 +1,79 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { ApiClientError } from "@/lib/api-client";
 import styles from "./login.module.css";
+
+const TILE_PX = 6;
+const MOSAIC_MS = 1800;
+
+/**
+ * Efecto "se dibuja": un canvas del color del fondo cubre el login y borra
+ * cubitos diminutos en orden diagonal con ruido, revelando el recuadro píxel a píxel.
+ * Es decorativo: no recibe eventos y se omite con prefers-reduced-motion.
+ */
+function PixelMosaic({ className }: { className: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      canvas.style.display = "none";
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.scale(dpr, dpr);
+
+    const cols = Math.ceil(width / TILE_PX);
+    const rows = Math.ceil(height / TILE_PX);
+    const total = cols * rows;
+    const fill = getComputedStyle(canvas).color;
+
+    // Orden de aparición: barrido diagonal mezclado con ruido.
+    const order = new Float32Array(total);
+    for (let i = 0; i < total; i += 1) {
+      const diagonal = ((i % cols) / cols + Math.floor(i / cols) / rows) / 2;
+      order[i] = diagonal * 0.5 + Math.random() * 0.5;
+    }
+    const indexes = Array.from({ length: total }, (_, i) => i).sort(
+      (a, b) => order[a] - order[b],
+    );
+
+    ctx.fillStyle = fill;
+    ctx.fillRect(0, 0, width, height);
+
+    let cleared = 0;
+    let frame = 0;
+    const start = performance.now();
+    const step = (now: number) => {
+      const target = Math.min(total, Math.ceil(((now - start) / MOSAIC_MS) * total));
+      for (; cleared < target; cleared += 1) {
+        const idx = indexes[cleared];
+        ctx.clearRect((idx % cols) * TILE_PX, Math.floor(idx / cols) * TILE_PX, TILE_PX, TILE_PX);
+      }
+      if (cleared < total) {
+        frame = requestAnimationFrame(step);
+      } else {
+        canvas.style.display = "none";
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return <canvas ref={ref} className={className} aria-hidden="true" />;
+}
 
 export default function LoginPage() {
   const { login, status, message: sessionMessage, refresh } = useAuth();
@@ -108,6 +176,7 @@ export default function LoginPage() {
       </figure>
 
       <div className={styles.loginLayout}>
+        <PixelMosaic className={styles.mosaic} />
         <section className={styles.loginCard} aria-labelledby="login-heading">
           <header className={styles.loginHeader}>
             <p className={styles.eyebrow}>PORTAL ACADÉMICO · SII</p>
